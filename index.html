@@ -1,1 +1,226 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .login-container {
+      background-color: #fff;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 400px;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    .input-field {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 20px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+
+    .input-field:focus {
+      border-color: #007BFF;
+      outline: none;
+    }
+
+    .button {
+      width: 100%;
+      padding: 12px;
+      background-color: #007BFF;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .button:hover {
+      background-color: #0056b3;
+    }
+
+    .forgot-password, .sign-up-link {
+      text-align: center;
+      margin-top: 15px;
+    }
+
+    .forgot-password a, .sign-up-link a {
+      color: #007BFF;
+      text-decoration: none;
+    }
+
+    .forgot-password a:hover, .sign-up-link a:hover {
+      text-decoration: underline;
+    }
+
+    /* Password strength bar */
+    .strength-bar {
+      height: 5px;
+      margin-top: 10px;
+      background-color: #ddd;
+      border-radius: 5px;
+      overflow: hidden;
+      width: 100%;
+    }
+
+    .strength-bar span {
+      display: block;
+      height: 100%;
+    }
+
+    /* Limit height of password strength indicator to prevent overlap */
+    .password-strength-indicator {
+      margin-bottom: 20px;
+      height: 20px; /* Adjust height to prevent overlap */
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- Login Container -->
+  <div class="login-container">
+    <h2>Login</h2>
+    
+    <!-- Username Input -->
+    <input type="text" id="username" class="input-field" placeholder="Username" required>
+    
+    <!-- Password Input -->
+    <input type="password" id="password" class="input-field" placeholder="Password" required>
+    
+    <!-- Password Strength Indicator -->
+    <div class="password-strength-indicator" id="passwordStrengthIndicator"></div>
+    
+    <!-- Sign In Button -->
+    <button class="button" onclick="login()">Sign In</button>
+    
+    <!-- Sign Up Link -->
+    <div class="sign-up-link">
+      <p>Don't have an account? <a href="#" onclick="showMsg('Sign Up')">Sign Up</a></p>
+    </div>
+    
+    <!-- Forgot Password Link -->
+    <div class="forgot-password">
+      <p><a href="#" onclick="showMsg('Forgot Password')">Forgot Password?</a></p>
+    </div>
+  </div>
+
+  <!-- Modal for displaying messages -->
+  <div id="msgModal" style="display: none;">
+    <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); display: flex; justify-content: center; align-items: center; z-index: 1000;">
+      <div style="background-color: white; padding: 20px; border-radius: 8px; text-align: center; width: 300px;">
+        <h4 id="msgText">Message</h4>
+        <button onclick="closeModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Function to show the message box
+    function showMsg(message) {
+      document.getElementById('msgText').innerText = `${message} functionality is being developed.`;
+      document.getElementById('msgModal').style.display = 'flex';
+    }
+
+    // Function to close the modal
+    function closeModal() {
+      document.getElementById('msgModal').style.display = 'none';
+    }
+
+    // Handle user login
+    function login() {
+      var username = document.getElementById("username").value;
+      var password = document.getElementById("password").value;
+
+      // Admin credentials check
+      if (username === "admin" && password === "admin123") {
+        localStorage.setItem("role", "admin");
+        window.location.href = "login.html"; // Redirect to login page after admin login
+        return; // Stop further checks if admin login successful
+      }
+
+      // Check if user exists in localStorage
+      var user = JSON.parse(localStorage.getItem(username));
+
+      if (user && user.password === password) {
+        localStorage.setItem("role", "user");
+        window.location.href = "login.html"; // Redirect to login page after successful user login
+      } else {
+        showMessage("Invalid username or password.");
+      }
+    }
+
+    // Function to display a message
+    function showMessage(message) {
+      document.getElementById('msgText').innerText = message;
+      document.getElementById('msgModal').style.display = 'flex';
+    }
+
+    // Password Strength Indicator (for sign up)
+    function updatePasswordStrength(password) {
+      var strength = 0;
+      if (password.length >= 8) strength += 1;
+      if (password.match(/[a-z]/)) strength += 1;
+      if (password.match(/[A-Z]/)) strength += 1;
+      if (password.match(/[0-9]/)) strength += 1;
+      if (password.match(/[\W_]/)) strength += 1;
+
+      var strengthBar = document.getElementById('passwordStrengthIndicator');
+      var strengthLevel = "";
+
+      if (strength === 1) {
+        strengthLevel = "Weak";
+        strengthBar.innerHTML = `<div style="width: 20%; background-color: red;"></div>`;
+      } else if (strength === 2) {
+        strengthLevel = "Medium";
+        strengthBar.innerHTML = `<div style="width: 40%; background-color: orange;"></div>`;
+      } else if (strength === 3) {
+        strengthLevel = "Strong";
+        strengthBar.innerHTML = `<div style="width: 60%; background-color: yellow;"></div>`;
+      } else if (strength === 4) {
+        strengthLevel = "Very Strong";
+        strengthBar.innerHTML = `<div style="width: 80%; background-color: lightgreen;"></div>`;
+      } else if (strength === 5) {
+        strengthLevel = "Excellent";
+        strengthBar.innerHTML = `<div style="width: 100%; background-color: green;"></div>`;
+      } else {
+        strengthLevel = "Very Weak";
+        strengthBar.innerHTML = `<div style="width: 0%; background-color: red;"></div>`;
+      }
+
+      return strengthLevel;
+    }
+
+    // Call the password strength function when typing password (for signup)
+    document.getElementById('password').addEventListener('input', function() {
+      updatePasswordStrength(this.value);
+    });
+
+  </script>
+
+</body>
+</html>
