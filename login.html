@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DWS Management - Login</title>
     <style>
-        /* Similar styles to the original */
         body {
             font-family: Arial, sans-serif;
             background-color: #f9fafb;
@@ -82,18 +81,75 @@
     <header>
         <h1>DWS Management</h1>
         <div>
-            <button class="logout-btn" onclick="window.location.href = 'index.html'">Logout</button>
+            <button class="logout-btn" onclick="logout()">Logout</button>
         </div>
     </header>
 
     <div class="main-content">
+        <h2 id="welcomeMessage">Welcome, User!</h2>
         <button class="button" onclick="window.location.href = 'createDWS.html'">Create DWS</button>
         <button class="button" onclick="window.location.href = 'manageDWS.html'">Manage DWS</button>
         <button class="help-btn" onclick="window.location.href = 'help.html'">Help</button>
     </div>
 
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js"></script>
+
     <script>
-        // No specific JavaScript needed here as all functions are moved to respective pages
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        // Initialize Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore(app);
+
+        // Handle logout
+        function logout() {
+            auth.signOut().then(() => {
+                window.location.href = 'index.html';  // Redirect to the login page
+            }).catch((error) => {
+                console.error("Error logging out: ", error);
+            });
+        }
+
+        // Retrieve user data from Firestore
+        function getUserData() {
+            const user = auth.currentUser;
+
+            if (user) {
+                // Fetch the user data from Firestore using the user's UID (email or other unique identifier)
+                db.collection("users").where("email", "==", user.email).get()
+                    .then((querySnapshot) => {
+                        if (querySnapshot.empty) {
+                            console.log("No user found!");
+                        } else {
+                            querySnapshot.forEach((doc) => {
+                                const userData = doc.data();
+                                document.getElementById("welcomeMessage").innerText = `Welcome, ${userData.username}!`;
+                            });
+                        }
+                    })
+                    .catch((error) => {
+                        console.error("Error getting documents: ", error);
+                    });
+            } else {
+                console.log("No user is signed in.");
+                window.location.href = 'index.html'; // Redirect to login if no user is logged in
+            }
+        }
+
+        // Call the function to get user data
+        getUserData();
     </script>
 </body>
 </html>
