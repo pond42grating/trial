@@ -1,1 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
 
+    .admin-container {
+      background-color: #fff;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 700px;
+    }
+
+    h2 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    .button {
+      width: 100%;
+      padding: 12px;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      margin: 10px 0;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .button:hover {
+      background-color: #0056b3;
+    }
+
+    .section {
+      margin: 20px 0;
+    }
+
+    .section h3 {
+      margin-bottom: 10px;
+      color: #007BFF;
+    }
+
+    .user-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    .user-list li {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px;
+      background-color: #f9f9f9;
+      margin-bottom: 5px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+
+    .user-list button {
+      padding: 5px 10px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .approve-btn {
+      background-color: #28a745;
+      color: white;
+    }
+
+    .approve-btn:hover {
+      background-color: #218838;
+    }
+
+    .reject-btn {
+      background-color: #dc3545;
+      color: white;
+    }
+
+    .reject-btn:hover {
+      background-color: #c82333;
+    }
+
+    .role-dropdown {
+      padding: 5px;
+      font-size: 14px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-container">
+    <h2>Admin Dashboard</h2>
+
+    <!-- Pending Approvals Section -->
+    <div class="section" id="pendingApprovalsSection">
+      <h3>Pending Approvals</h3>
+      <ul class="user-list" id="pendingApprovalsList">
+        <!-- Dynamically added pending approvals -->
+      </ul>
+    </div>
+
+    <!-- User Logs Section -->
+    <div class="section" id="userLogsSection">
+      <h3>User Logs</h3>
+      <ul class="user-list" id="userLogsList">
+        <!-- Dynamically added user logs -->
+      </ul>
+    </div>
+
+    <!-- Manage Privileges Section -->
+    <div class="section" id="managePrivilegesSection">
+      <h3>Manage Privileges</h3>
+      <ul class="user-list" id="privilegesList">
+        <!-- Dynamically added user privileges -->
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    // Mock Data for Demonstration
+    const pendingApprovals = [
+      { username: 'user1', email: 'user1@example.com' },
+      { username: 'user2', email: 'user2@example.com' },
+    ];
+
+    const userLogs = [
+      { username: 'user1', action: 'Login', timestamp: '2024-12-30 10:00 AM' },
+      { username: 'user2', action: 'Logout', timestamp: '2024-12-30 11:00 AM' },
+    ];
+
+    const users = [
+      { username: 'user1', role: 'Normal' },
+      { username: 'user2', role: 'Moderator' },
+    ];
+
+    // Load Pending Approvals
+    function loadPendingApprovals() {
+      const list = document.getElementById('pendingApprovalsList');
+      list.innerHTML = '';
+      pendingApprovals.forEach((user) => {
+        const listItem = document.createElement('li');
+        listItem.innerHTML = `
+          ${user.username} (${user.email})
+          <button class="approve-btn" onclick="approveUser('${user.username}')">Approve</button>
+          <button class="reject-btn" onclick="rejectUser('${user.username}')">Reject</button>
+        `;
+        list.appendChild(listItem);
+      });
+    }
+
+    // Approve User
+    function approveUser(username) {
+      alert(`${username} has been approved.`);
+      removePendingApproval(username);
+    }
+
+    // Reject User
+    function rejectUser(username) {
+      alert(`${username} has been rejected.`);
+      removePendingApproval(username);
+    }
+
+    // Remove from Pending Approvals
+    function removePendingApproval(username) {
+      const index = pendingApprovals.findIndex((user) => user.username === username);
+      if (index !== -1) {
+        pendingApprovals.splice(index, 1);
+        loadPendingApprovals();
+      }
+    }
+
+    // Load User Logs
+    function loadUserLogs() {
+      const list = document.getElementById('userLogsList');
+      list.innerHTML = '';
+      userLogs.forEach((log) => {
+        const listItem = document.createElement('li');
+        listItem.textContent = `${log.username} - ${log.action} at ${log.timestamp}`;
+        list.appendChild(listItem);
+      });
+    }
+
+    // Load Manage Privileges
+    function loadPrivileges() {
+      const list = document.getElementById('privilegesList');
+      list.innerHTML = '';
+      users.forEach((user) => {
+        const listItem = document.createElement('li');
+        listItem.innerHTML = `
+          ${user.username}
+          <select class="role-dropdown" onchange="changeRole('${user.username}', this.value)">
+            <option value="Normal" ${user.role === 'Normal' ? 'selected' : ''}>Normal</option>
+            <option value="Moderator" ${user.role === 'Moderator' ? 'selected' : ''}>Moderator</option>
+            <option value="Manager" ${user.role === 'Manager' ? 'selected' : ''}>Manager</option>
+            <option value="Admin" ${user.role === 'Admin' ? 'selected' : ''}>Admin</option>
+          </select>
+        `;
+        list.appendChild(listItem);
+      });
+    }
+
+    // Change User Role
+    function changeRole(username, role) {
+      const user = users.find((user) => user.username === username);
+      if (user) {
+        user.role = role;
+        alert(`${username}'s role has been changed to ${role}.`);
+      }
+    }
+
+    // Initialize Admin Dashboard
+    function initializeDashboard() {
+      loadPendingApprovals();
+      loadUserLogs();
+      loadPrivileges();
+    }
+
+    // Initialize on Load
+    window.onload = initializeDashboard;
+  </script>
+</body>
+</html>
