@@ -1,82 +1,49 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Send Data to Firebase</title>
-
-  <!-- Firebase SDK via CDN -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase Connection Status</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js"></script>
 </head>
 <body>
+    <h1>Firebase Connection Status</h1>
+    <p id="status">Checking Firebase connection...</p>
 
-  <h1>Send Data to Firestore</h1>
-
-  <button onclick="sendDataToFirebase()">Send Data</button>
-
-  <script>
-    // Firebase configuration (replace with your actual Firebase credentials)
-    // Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyAXZgxM6PU-T3D2811KnBszblRWju7rv1Y",
-  authDomain: "dws-management.firebaseapp.com",
-  projectId: "dws-management",
-  storageBucket: "dws-management.firebasestorage.app",
-  messagingSenderId: "23827231923",
-  appId: "1:23827231923:web:97141b6d19c7cd109d2cc6",
-  measurementId: "G-L14GLJDYW7"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-
-    // Initialize Firebase
-    const app = firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore(app);
-
-    // Function to send data to Firebase Firestore
-    async function sendDataToFirebase() {
-      try {
-        const dwsData = {
-          dwsNo: 1,
-          date: "2024-12-30",
-          structureName: "Building A",
-          siNo: "12345",
-          workDescription: "Electrical Wiring",
-          location: "Section 1",
-          manpower: [
-            { badgeNo: "001", name: "John Doe", jobTitle: "Electrician", workingHours: 8 },
-            { badgeNo: "002", name: "Jane Smith", jobTitle: "Technician", workingHours: 7 },
-          ],
-          equipment: [
-            { equipmentName: "Drill", workingHours: 5 },
-            { equipmentName: "Saw", workingHours: 4 },
-          ],
-          materials: [
-            { materialName: "Wire", quantity: 100 },
-            { materialName: "Nails", quantity: 50 },
-          ],
+    <script>
+        // Firebase configuration object
+        const firebaseConfig = {
+            apiKey: "AIzaSyAXZgxM6PU-T3D2811KnBszblRWju7rv1Y",
+            authDomain: "dws-management.firebaseapp.com",
+            projectId: "dws-management",
+            storageBucket: "dws-management.firebasestorage.app",
+            messagingSenderId: "23827231923",
+            appId: "1:23827231923:web:0128462cbe55dfdc9d2cc6",
+            measurementId: "G-6VZVVDS3S0"
         };
 
-        // Save data to Firestore
-        const docRef = await db.collection("dwsSchedules").doc(`${dwsData.dwsNo}`).set(dwsData);
-        console.log("Data successfully saved to Firebase");
-        alert("Data successfully saved to Firebase!");
-      } catch (error) {
-        console.error("Error saving data to Firebase: ", error);
-        alert(`Error saving data to Firebase: ${error.message}`);
-      }
-    }
-  </script>
+        // Initialize Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore(app);
 
+        // Function to check Firebase connection status
+        function checkFirebaseConnection() {
+            db.collection("testCollection").get()
+                .then((snapshot) => {
+                    if (snapshot.empty) {
+                        document.getElementById("status").textContent = "Connection successful, but no data found in 'testCollection'.";
+                    } else {
+                        document.getElementById("status").textContent = "Connection successful and data found!";
+                    }
+                })
+                .catch((error) => {
+                    document.getElementById("status").textContent = "Error connecting to Firebase: " + error.message;
+                });
+        }
+
+        // Run the function to check the status
+        checkFirebaseConnection();
+    </script>
 </body>
 </html>
