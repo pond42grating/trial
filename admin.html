@@ -54,12 +54,27 @@
       display: inline-block;
       background-color: #f44336;
     }
+
+    #searchBar {
+      width: 200px;
+      padding: 8px;
+      margin-bottom: 10px;
+    }
+
+    .user-details {
+      padding: 10px;
+      background-color: #f4f4f4;
+      margin-top: 20px;
+    }
   </style>
 </head>
 <body>
 
 <div class="admin-container">
   <h2>Admin Dashboard</h2>
+  
+  <!-- Search User -->
+  <input type="text" id="searchBar" onkeyup="searchUser()" placeholder="Search by username..." class="button">
 
   <h3>Pending User Approvals</h3>
   <table id="userTable">
@@ -75,6 +90,12 @@
       <!-- Users will be populated here -->
     </tbody>
   </table>
+
+  <div class="user-details" id="userDetailsSection" style="display:none;">
+    <h3>User Details</h3>
+    <div id="userInfo"></div>
+    <button class="button" onclick="removeUser()">Remove User</button>
+  </div>
 
   <button class="button logout-btn" onclick="logout()">Log Out</button>
 </div>
@@ -97,6 +118,7 @@
             <td>
               <button class="button" onclick="approveUser('${key}')">Approve</button>
               <button class="button" onclick="rejectUser('${key}')">Reject</button>
+              <button class="button" onclick="viewUserDetails('${key}')">View Details</button>
             </td>
           `;
           userTableBody.appendChild(row);
@@ -117,6 +139,45 @@
   function rejectUser(username) {
     localStorage.removeItem(username);
     loadPendingUsers();  // Reload the table
+  }
+
+  // View user details
+  function viewUserDetails(username) {
+    var user = JSON.parse(localStorage.getItem(username));
+    var userDetailsSection = document.getElementById("userDetailsSection");
+    var userInfo = document.getElementById("userInfo");
+
+    userInfo.innerHTML = `
+      <p><strong>Username:</strong> ${username}</p>
+      <p><strong>Email:</strong> ${user.email}</p>
+      <p><strong>Status:</strong> ${user.status}</p>
+      <p><strong>Secret Code:</strong> ${user.secretCode}</p>
+    `;
+    
+    userDetailsSection.style.display = "block";
+  }
+
+  // Remove a user from localStorage
+  function removeUser() {
+    var username = document.getElementById("userInfo").querySelector("p").innerText.split(':')[1].trim();
+    localStorage.removeItem(username);
+    loadPendingUsers();  // Reload the table
+    document.getElementById("userDetailsSection").style.display = "none";
+  }
+
+  // Search for a user by username
+  function searchUser() {
+    var searchInput = document.getElementById("searchBar").value.toLowerCase();
+    var rows = document.getElementById("userTableBody").getElementsByTagName("tr");
+
+    Array.from(rows).forEach(function(row) {
+      var username = row.cells[0].textContent.toLowerCase();
+      if (username.indexOf(searchInput) !== -1) {
+        row.style.display = "";
+      } else {
+        row.style.display = "none";
+      }
+    });
   }
 
   // Logout function to clear session and redirect to login
