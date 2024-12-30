@@ -92,10 +92,17 @@
     // Function to send OTP to email
     function sendOTP() {
         const email = document.getElementById("email").value;
+        const statusDiv = document.getElementById("status");
+
+        // Validate email input
         if (!email) {
-            document.getElementById("status").textContent = "Please enter a valid email address.";
+            statusDiv.textContent = "Please enter a valid email address.";
+            statusDiv.style.color = "red";
             return;
         }
+
+        // Log for debugging
+        console.log("Sending OTP to email:", email);
 
         // Action code settings for the link sent to the email
         const actionCodeSettings = {
@@ -106,15 +113,19 @@
         // Send OTP email via Firebase Authentication
         sendSignInLinkToEmail(auth, email, actionCodeSettings)
             .then(() => {
+                console.log("OTP sent to:", email);  // Log success
                 // Store email in local storage to complete sign-in later
                 window.localStorage.setItem('emailForSignIn', email);
                 document.getElementById("otpSection").style.display = "block";
-                document.getElementById("status").textContent = "OTP sent to your email! Please check your inbox.";
+                statusDiv.textContent = "OTP sent to your email! Please check your inbox.";
+                statusDiv.style.color = "green";
             })
             .catch((error) => {
                 const errorCode = error.code;
                 const errorMessage = error.message;
-                document.getElementById("status").textContent = `Error: ${errorMessage}`;
+                console.error("Error sending OTP:", errorCode, errorMessage);  // Log error
+                statusDiv.textContent = `Error: ${errorMessage}`;
+                statusDiv.style.color = "red";
             });
     }
 
@@ -122,22 +133,33 @@
     function verifyOTP() {
         const email = window.localStorage.getItem('emailForSignIn');
         const otp = document.getElementById("otp").value;
+        const statusDiv = document.getElementById("status");
+
+        if (!otp) {
+            statusDiv.textContent = "Please enter the OTP.";
+            statusDiv.style.color = "red";
+            return;
+        }
 
         // Check if the OTP is valid by confirming the email link
         if (isSignInWithEmailLink(auth, otp)) {
             // Sign in using the OTP (email link)
             signInWithEmailLink(auth, email, otp)
                 .then(() => {
-                    document.getElementById("status").textContent = "Email verified successfully!";
+                    statusDiv.textContent = "Email verified successfully!";
+                    statusDiv.style.color = "green";
                     window.localStorage.removeItem('emailForSignIn');
                 })
                 .catch((error) => {
                     const errorCode = error.code;
                     const errorMessage = error.message;
-                    document.getElementById("status").textContent = `Error: ${errorMessage}`;
+                    console.error("Error verifying OTP:", errorCode, errorMessage);  // Log error
+                    statusDiv.textContent = `Error: ${errorMessage}`;
+                    statusDiv.style.color = "red";
                 });
         } else {
-            document.getElementById("status").textContent = "Invalid OTP.";
+            statusDiv.textContent = "Invalid OTP.";
+            statusDiv.style.color = "red";
         }
     }
 </script>
