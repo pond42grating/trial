@@ -16,16 +16,28 @@
   <button onclick="sendDataToFirebase()">Send Data</button>
 
   <script>
-    // Firebase configuration
-    const firebaseConfig = {
-    apiKey: "AIzaSyAXZgxM6PU-T3D2811KnBszblRWju7rv1Y",
-    authDomain: "dws-management.firebaseapp.com",
-    projectId: "dws-management",
-    storageBucket: "dws-management.firebasestorage.app",
-    messagingSenderId: "23827231923",
-    appId: "1:23827231923:web:0128462cbe55dfdc9d2cc6",
-    measurementId: "G-6VZVVDS3S0"
-  };
+    // Firebase configuration (replace with your actual Firebase credentials)
+    // Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyAXZgxM6PU-T3D2811KnBszblRWju7rv1Y",
+  authDomain: "dws-management.firebaseapp.com",
+  projectId: "dws-management",
+  storageBucket: "dws-management.firebasestorage.app",
+  messagingSenderId: "23827231923",
+  appId: "1:23827231923:web:97141b6d19c7cd109d2cc6",
+  measurementId: "G-L14GLJDYW7"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
 
     // Initialize Firebase
     const app = firebase.initializeApp(firebaseConfig);
@@ -55,11 +67,13 @@
           ],
         };
 
-        await db.collection("dwsSchedules").doc(`${dwsData.dwsNo}`).set(dwsData);
+        // Save data to Firestore
+        const docRef = await db.collection("dwsSchedules").doc(`${dwsData.dwsNo}`).set(dwsData);
+        console.log("Data successfully saved to Firebase");
         alert("Data successfully saved to Firebase!");
       } catch (error) {
         console.error("Error saving data to Firebase: ", error);
-        alert("Error saving data to Firebase.");
+        alert(`Error saving data to Firebase: ${error.message}`);
       }
     }
   </script>
