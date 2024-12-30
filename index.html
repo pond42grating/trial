@@ -159,13 +159,17 @@
   const user = JSON.parse(localStorage.getItem(username));
 
   if (username === 'admin' && password === 'admin123') {
-    alert('Admin logged in.');
     localStorage.setItem('currentUser', 'admin');
-    window.location.href = 'login.html'; // Redirect to login.html for admin
+    alert('Admin logged in.');
+    window.location.href = 'admin.html'; // Redirect to admin panel
   } else if (user && user.password === password) {
-    alert('Login successful!');
-    localStorage.setItem('currentUser', username);
-    window.location.href = 'login.html'; // Redirect to login.html for normal users
+    if (user.role === 'pending') {
+      alert('Your account is pending admin approval.');
+    } else {
+      localStorage.setItem('currentUser', username);
+      alert('Login successful!');
+      window.location.href = 'login.html'; // Redirect to user home page
+    }
   } else {
     alert('Invalid credentials.');
   }
