@@ -3,169 +3,109 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DWS Management - Login</title>
+  <title>Login - DWS Management</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background-color: #f4f4f9;
-      padding: 20px;
+      background-color: #f0f0f0;
       margin: 0;
+      padding: 0;
+      transition: background-color 0.5s ease;
     }
-
-    .container {
-      max-width: 400px;
-      margin: 0 auto;
-      background-color: #ffffff;
-      padding: 30px;
-      border-radius: 8px;
-      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    header {
+      background-color: #333;
+      color: white;
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
-
-    h1 {
-      text-align: center;
-      color: #333;
-      margin-bottom: 20px;
+    .main-content {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      gap: 20px;
     }
-
     .input-field {
-      width: 100%;
+      width: 300px;
       padding: 12px;
       margin: 10px 0;
       border: 1px solid #ddd;
       border-radius: 5px;
-      font-size: 16px;
     }
-
     .button {
-      width: 100%;
-      padding: 12px;
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 16px;
-    }
-
-    .button:hover {
-      background-color: #45a049;
-    }
-
-    .link-btn {
-      text-align: center;
-      margin-top: 10px;
-    }
-
-    .link-btn a {
-      color: #4CAF50;
-      text-decoration: none;
-    }
-
-    .link-btn a:hover {
-      text-decoration: underline;
-    }
-
-    .small-button {
-      padding: 8px 16px;
-      font-size: 14px;
       background-color: #2196F3;
       color: white;
       border: none;
-      border-radius: 5px;
+      padding: 15px 30px;
+      font-size: 18px;
       cursor: pointer;
+      border-radius: 8px;
+      width: 300px;
+      text-align: center;
     }
-
-    .small-button:hover {
+    .button:hover {
       background-color: #1976D2;
     }
-
-    .footer {
-      text-align: center;
-      margin-top: 20px;
+    .toggle-theme-btn {
+      background-color: #ff9800;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    .toggle-theme-btn:hover {
+      background-color: #fb8c00;
+    }
+    .show-password {
+      position: absolute;
+      right: 50px;
+      top: 235px;
+      cursor: pointer;
+    }
+    .remember-me {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .remember-me input {
+      margin-right: 5px;
+    }
+    .error-msg {
+      color: red;
+      font-size: 14px;
     }
   </style>
 </head>
 <body>
-
-  <div class="container">
+  <header>
     <h1>DWS Management</h1>
-    <input type="email" id="email" class="input-field" placeholder="Enter your email" required>
-    <input type="password" id="password" class="input-field" placeholder="Enter your password" required>
+  </header>
+
+  <div class="main-content">
+    <input type="text" id="username" class="input-field" placeholder="Username" required>
+    <input type="password" id="password" class="input-field" placeholder="Password" required>
+    <i class="show-password" id="showPassword" onclick="togglePassword()">👁️</i>
     
+    <div class="remember-me">
+      <input type="checkbox" id="rememberMe"> Remember me
+    </div>
+
     <button class="button" onclick="login()">Login</button>
+    <p><a href="signup.html">Sign Up</a> | <a href="forget.html">Forgot Password</a></p>
+    <button class="toggle-theme-btn" onclick="toggleTheme()">Toggle Dark/Light Mode</button>
 
-    <div class="link-btn">
-      <button class="small-button" onclick="window.location.href = 'signup.html'">
-        Sign Up
-      </button>
-      <button class="small-button" onclick="window.location.href = 'forget.html'">
-        Forgot Password
-      </button>
-    </div>
-
-    <div class="footer">
-      <p>&copy; 2024 DWS Management</p>
-    </div>
+    <p class="error-msg" id="errorMsg"></p>
   </div>
 
-  <script>
-    // Firebase login logic with admin credentials check
-    function login() {
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
 
-      if (email === "" || password === "") {
-        alert("Please fill out both fields.");
-        return;
-      }
-
-      // Firebase Authentication login
-      firebase.auth().signInWithEmailAndPassword(email, password)
-        .then((userCredential) => {
-          const user = userCredential.user;
-
-          // Now check if this user is an admin
-          checkAdminStatus(user);
-        })
-        .catch((error) => {
-          alert("Error: " + error.message);
-        });
-    }
-
-    // Check if the logged-in user is an admin
-    function checkAdminStatus(user) {
-      const userEmail = user.email;
-
-      // Fetch the admin credentials from Firestore
-      firebase.firestore().collection("users").doc("admin").get()
-        .then(doc => {
-          if (doc.exists) {
-            const adminData = doc.data();
-            // Check if user is admin by comparing the stored admin credentials
-            if (userEmail === adminData.username && user.email === adminData.password) {
-              // If admin, redirect to admin page
-              window.location.href = "admin.html";
-            } else {
-              // If not admin, redirect to login page
-              alert("Incorrect username or password.");
-            }
-          } else {
-            console.log("No admin credentials found");
-            alert("Admin not found.");
-          }
-        })
-        .catch((error) => {
-          console.error("Error fetching admin credentials: ", error);
-          alert("Error checking admin status.");
-        });
-    }
-  </script>
-
-  <!-- Firebase Initialization -->
-  <script src="https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js"></script>
-  <script>
     const firebaseConfig = {
       apiKey: "AIzaSyAXZgxM6PU-T3D2811KnBszblRWju7rv1Y",
       authDomain: "dws-management.firebaseapp.com",
@@ -176,9 +116,68 @@
       measurementId: "G-L14GLJDYW7"
     };
 
-    // Initialize Firebase
-    firebase.initializeApp(firebaseConfig);
-  </script>
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
+    function togglePassword() {
+      const passwordField = document.getElementById('password');
+      passwordField.type = passwordField.type === 'password' ? 'text' : 'password';
+    }
+
+    function toggleTheme() {
+      document.body.style.backgroundColor = document.body.style.backgroundColor === 'rgb(240, 240, 240)' ? '#333' : '#f0f0f0';
+      document.body.style.color = document.body.style.color === 'rgb(240, 240, 240)' ? '#fff' : '#000';
+    }
+
+    function login() {
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      const rememberMe = document.getElementById('rememberMe').checked;
+      const errorMsg = document.getElementById('errorMsg');
+
+      if (!username || !password) {
+        errorMsg.textContent = 'Please fill in all fields.';
+        return;
+      }
+
+      signInWithEmailAndPassword(auth, username + '@domain.com', password)
+        .then(async (userCredential) => {
+          const user = userCredential.user;
+          const userDocRef = doc(db, 'users', user.uid);
+          const userDoc = await getDoc(userDocRef);
+
+          if (!userDoc.exists()) {
+            errorMsg.textContent = 'Username not registered.';
+            return;
+          }
+
+          const userData = userDoc.data();
+          if (userData.role === 'admin') {
+            window.location.href = 'admin.html';
+          } else {
+            window.location.href = 'login.html';
+          }
+
+          if (rememberMe) {
+            localStorage.setItem('username', username);
+            localStorage.setItem('password', password);
+          }
+        })
+        .catch((error) => {
+          errorMsg.textContent = 'Invalid credentials.';
+        });
+    }
+
+    window.onload = () => {
+      const savedUsername = localStorage.getItem('username');
+      const savedPassword = localStorage.getItem('password');
+      if (savedUsername && savedPassword) {
+        document.getElementById('username').value = savedUsername;
+        document.getElementById('password').value = savedPassword;
+        document.getElementById('rememberMe').checked = true;
+      }
+    };
+  </script>
 </body>
 </html>
