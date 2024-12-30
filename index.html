@@ -1,167 +1,144 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Email OTP Verification</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f9;
-            padding: 20px;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DWS Management</title>
+  <style>
+    /* Reset and general styles */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-        .otp-container {
-            max-width: 400px;
-            margin: 0 auto;
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f4f7f6;
+      color: #333;
+      line-height: 1.6;
+    }
 
-        h2 {
-            text-align: center;
-        }
+    /* Header styles */
+    header {
+      background-color: #2D3E50;
+      color: white;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
 
-        .input-field {
-            width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
+    header h1 {
+      font-size: 2.5em;
+      margin: 0;
+    }
 
-        .button {
-            width: 100%;
-            padding: 12px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
+    /* Welcome Section */
+    .welcome-section {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 20px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 80vh;
+    }
 
-        .button:hover {
-            background-color: #45a049;
-        }
+    .welcome-section h2 {
+      font-size: 2.2em;
+      margin-bottom: 20px;
+      color: #2D3E50;
+    }
 
-        .status {
-            text-align: center;
-            margin-top: 20px;
-            color: green;
-        }
-    </style>
+    .welcome-section p {
+      font-size: 1.1em;
+      margin-bottom: 30px;
+      color: #555;
+    }
+
+    /* Button container */
+    .button-container {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      max-width: 300px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    /* Button styles */
+    .button {
+      background-color: #4CAF50;
+      color: white;
+      padding: 14px;
+      font-size: 1.2em;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.3s ease-in-out;
+    }
+
+    .button:hover {
+      background-color: #45a049;
+      transform: translateY(-2px);
+    }
+
+    .button:active {
+      transform: translateY(1px);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .welcome-section {
+        padding: 30px 10px;
+      }
+
+      .button-container {
+        width: 100%;
+      }
+
+      .button {
+        font-size: 1.1em;
+      }
+    }
+
+    /* Footer (Optional) */
+    footer {
+      background-color: #2D3E50;
+      color: white;
+      padding: 10px;
+      text-align: center;
+      position: absolute;
+      width: 100%;
+      bottom: 0;
+    }
+  </style>
 </head>
 <body>
 
-<div class="otp-container">
-    <h2>Email OTP Verification</h2>
+<header>
+  <h1>DWS Management</h1>
+</header>
 
-    <input type="email" id="email" class="input-field" placeholder="Enter your email" required>
-    <button class="button" onclick="sendOTP()">Send OTP</button>
-
-    <div id="otpSection" style="display: none;">
-        <input type="text" id="otp" class="input-field" placeholder="Enter OTP" required>
-        <button class="button" onclick="verifyOTP()">Verify OTP</button>
-    </div>
-
-    <div id="status" class="status"></div>
+<div class="welcome-section">
+  <h2>Welcome to DWS Management</h2>
+  <p>Your solution for managing daily work schedules and tasks efficiently. Get started by logging in, signing up, or recovering your password.</p>
+  <div class="button-container">
+    <button class="button" onclick="window.location.href = 'login.html'">Login</button>
+    <button class="button" onclick="window.location.href = 'signup.html'">Sign Up</button>
+    <button class="button" onclick="window.location.href = 'forget.html'">Forgot Password</button>
+  </div>
 </div>
 
-<script type="module">
-    // Import Firebase SDK functions
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-app.js";
-    import { getAuth, sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-auth.js";
+<footer>
+  <p>&copy; 2024 DWS Management | All Rights Reserved</p>
+</footer>
 
-    // Firebase configuration
-    const firebaseConfig = {
-        apiKey: "AIzaSyAXZgxM6PU-T3D2811KnBszblRWju7rv1Y",
-        authDomain: "dws-management.firebaseapp.com",
-        projectId: "dws-management",
-        storageBucket: "dws-management.appspot.com",
-        messagingSenderId: "23827231923",
-        appId: "1:23827231923:web:97141b6d19c7cd109d2cc6",
-        measurementId: "G-L14GLJDYW7"
-    };
-
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-
-    // Function to send OTP to email
-    function sendOTP() {
-        const email = document.getElementById("email").value;
-        const statusDiv = document.getElementById("status");
-
-        // Check if email field is empty
-        if (!email) {
-            statusDiv.textContent = "Please fill in your email.";
-            statusDiv.style.color = "red";
-            return;
-        }
-
-        // Log for debugging
-        console.log("Sending OTP to email:", email);
-
-        // Action code settings for the link sent to the email
-        const actionCodeSettings = {
-            url: window.location.href,  // URL to redirect to after email verification
-            handleCodeInApp: true       // Ensures the link is handled within the app
-        };
-
-        // Send OTP email via Firebase Authentication
-        sendSignInLinkToEmail(auth, email, actionCodeSettings)
-            .then(() => {
-                console.log("OTP sent to:", email);  // Log success
-                // Store email in local storage to complete sign-in later
-                window.localStorage.setItem('emailForSignIn', email);
-                document.getElementById("otpSection").style.display = "block";
-                statusDiv.textContent = "OTP sent to your email! Please check your inbox.";
-                statusDiv.style.color = "green";
-            })
-            .catch((error) => {
-                const errorCode = error.code;
-                const errorMessage = error.message;
-                console.error("Error sending OTP:", errorCode, errorMessage);  // Log error
-                statusDiv.textContent = `Error: ${errorMessage}`;
-                statusDiv.style.color = "red";
-            });
-    }
-
-    // Function to verify the OTP
-    function verifyOTP() {
-        const email = window.localStorage.getItem('emailForSignIn');
-        const otp = document.getElementById("otp").value;
-        const statusDiv = document.getElementById("status");
-
-        if (!otp) {
-            statusDiv.textContent = "Please enter the OTP.";
-            statusDiv.style.color = "red";
-            return;
-        }
-
-        // Check if the OTP is valid by confirming the email link
-        if (isSignInWithEmailLink(auth, otp)) {
-            // Sign in using the OTP (email link)
-            signInWithEmailLink(auth, email, otp)
-                .then(() => {
-                    statusDiv.textContent = "Email verified successfully!";
-                    statusDiv.style.color = "green";
-                    window.localStorage.removeItem('emailForSignIn');
-                })
-                .catch((error) => {
-                    const errorCode = error.code;
-                    const errorMessage = error.message;
-                    console.error("Error verifying OTP:", errorCode, errorMessage);  // Log error
-                    statusDiv.textContent = `Error: ${errorMessage}`;
-                    statusDiv.style.color = "red";
-                });
-        } else {
-            statusDiv.textContent = "Invalid OTP.";
-            statusDiv.style.color = "red";
-        }
-    }
+<script>
+  // You can add any additional JavaScript functionality if needed
 </script>
 
 </body>
