@@ -94,9 +94,9 @@
         const email = document.getElementById("email").value;
         const statusDiv = document.getElementById("status");
 
-        // Validate email input
+        // Check if email field is empty
         if (!email) {
-            statusDiv.textContent = "Please enter a valid email address.";
+            statusDiv.textContent = "Please fill in your email.";
             statusDiv.style.color = "red";
             return;
         }
