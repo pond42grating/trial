@@ -1,1 +1,60 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Help</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9fafb;
+            margin: 0;
+            padding: 0;
+        }
+
+        .main-content {
+            margin-top: 80px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: calc(100vh - 80px);
+            gap: 20px;
+        }
+
+        .button {
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            cursor: pointer;
+            border-radius: 8px;
+            width: 250px;
+            text-align: center;
+        }
+
+        .button:hover {
+            background-color: #1976D2;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Help</h1>
+        <div>
+            <button class="logout-btn" onclick="window.location.href = 'index.html'">Logout</button>
+        </div>
+    </header>
+
+    <div class="main-content">
+        <p>Help content will be implemented here.</p>
+        <button class="button" onclick="window.location.href = 'login.html'">Back to Main</button>
+    </div>
+
+    <script>
+        // No specific JavaScript needed for now
+    </script>
+</body>
+</html>
