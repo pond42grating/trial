@@ -43,8 +43,10 @@
         };
         
         // Saving the admin data in Firestore
+        console.log('Saving admin credentials...');
         await setDoc(adminDocRef, adminData);
-
+        console.log('Admin credentials saved successfully!');
+        
         alert("Admin credentials saved successfully!");
       } catch (error) {
         console.error("Error saving admin credentials: ", error);
