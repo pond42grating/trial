@@ -3,13 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Firebase Connection Status</title>
+    <title>Firebase Data Viewer</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js"></script>
 </head>
 <body>
-    <h1>Firebase Connection Status</h1>
-    <p id="status">Checking Firebase connection...</p>
+    <h1>Firebase Data</h1>
+    <div id="data-container">
+        <p>Loading data...</p>
+    </div>
 
     <script>
         // Firebase configuration object
@@ -27,23 +29,29 @@
         const app = firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore(app);
 
-        // Function to check Firebase connection status
-        function checkFirebaseConnection() {
-            db.collection("testCollection").get()
-                .then((snapshot) => {
-                    if (snapshot.empty) {
-                        document.getElementById("status").textContent = "Connection successful, but no data found in 'testCollection'.";
-                    } else {
-                        document.getElementById("status").textContent = "Connection successful and data found!";
-                    }
-                })
-                .catch((error) => {
-                    document.getElementById("status").textContent = "Error connecting to Firebase: " + error.message;
+        // Function to fetch and display data from Firestore
+        function fetchDataFromFirebase() {
+            const collectionRef = db.collection("User"); // Replace with your collection name
+
+            collectionRef.get().then((querySnapshot) => {
+                if (querySnapshot.empty) {
+                    document.getElementById("data-container").innerHTML = "<p>No data found.</p>";
+                    return;
+                }
+
+                let dataHTML = "<ul>";
+                querySnapshot.forEach((doc) => {
+                    dataHTML += `<li>${JSON.stringify(doc.data())}</li>`; // Display document data
                 });
+                dataHTML += "</ul>";
+                document.getElementById("data-container").innerHTML = dataHTML;
+            }).catch((error) => {
+                document.getElementById("data-container").innerHTML = "<p>Error loading data: " + error.message + "</p>";
+            });
         }
 
-        // Run the function to check the status
-        checkFirebaseConnection();
+        // Call the function to fetch data when the page loads
+        fetchDataFromFirebase();
     </script>
 </body>
 </html>
