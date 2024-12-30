@@ -3,12 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Firebase User Data</title>
+    <title>Firebase Authentication & User Data</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js"></script>
 </head>
 <body>
-    <h1>Firebase User Data</h1>
+    <h1>Firebase Authentication & User Data</h1>
+
+    <!-- Authentication UI -->
+    <div id="auth-container">
+        <h3>Sign Up</h3>
+        <input type="email" id="sign-up-email" placeholder="Enter email">
+        <input type="password" id="sign-up-password" placeholder="Enter password">
+        <button onclick="signUp()">Sign Up</button>
+
+        <h3>Login</h3>
+        <input type="email" id="login-email" placeholder="Enter email">
+        <input type="password" id="login-password" placeholder="Enter password">
+        <button onclick="login()">Login</button>
+
+        <button onclick="logout()">Logout</button>
+    </div>
+
+    <!-- Data Container -->
     <div id="data-container">
         <p>Loading data...</p>
     </div>
@@ -27,11 +45,12 @@
 
         // Initialize Firebase
         const app = firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
         const db = firebase.firestore(app);
 
         // Function to fetch and display user data from Firestore
         function fetchUserData() {
-            const userRef = db.collection("users"); // Collection name is "users"
+            const userRef = db.collection("User"); // Collection name is "User"
 
             userRef.get().then((querySnapshot) => {
                 if (querySnapshot.empty) {
@@ -42,8 +61,8 @@
                 let dataHTML = "<ul>";
                 querySnapshot.forEach((doc) => {
                     const userData = doc.data();
-                    if (userData.Main) {
-                        dataHTML += `<li>User ID: ${doc.id}, Main Field: ${JSON.stringify(userData.Main)}</li>`;
+                    if (userData.User && userData.User.Main) {
+                        dataHTML += `<li>User ID: ${doc.id}, Main Field: ${JSON.stringify(userData.User.Main)}</li>`;
                     } else {
                         dataHTML += `<li>User ID: ${doc.id}, Main Field: Not found</li>`;
                     }
@@ -52,11 +71,65 @@
                 document.getElementById("data-container").innerHTML = dataHTML;
             }).catch((error) => {
                 document.getElementById("data-container").innerHTML = "<p>Error loading data: " + error.message + "</p>";
+                console.error("Error fetching data:", error);
             });
         }
 
-        // Call the function to fetch data when the page loads
-        fetchUserData();
+        // Function to sign up a new user
+        function signUp() {
+            const email = document.getElementById("sign-up-email").value;
+            const password = document.getElementById("sign-up-password").value;
+
+            auth.createUserWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    const user = userCredential.user;
+                    alert("Sign Up Successful: " + user.email);
+                    fetchUserData();  // Fetch user data after sign-up
+                })
+                .catch((error) => {
+                    const errorMessage = error.message;
+                    alert("Error: " + errorMessage);
+                });
+        }
+
+        // Function to log in an existing user
+        function login() {
+            const email = document.getElementById("login-email").value;
+            const password = document.getElementById("login-password").value;
+
+            auth.signInWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    const user = userCredential.user;
+                    alert("Login Successful: " + user.email);
+                    fetchUserData();  // Fetch user data after login
+                })
+                .catch((error) => {
+                    const errorMessage = error.message;
+                    alert("Error: " + errorMessage);
+                });
+        }
+
+        // Function to log out the current user
+        function logout() {
+            auth.signOut().then(() => {
+                alert("Logged out successfully.");
+                document.getElementById("data-container").innerHTML = "<p>Loading data...</p>";
+            }).catch((error) => {
+                alert("Error logging out: " + error.message);
+            });
+        }
+
+        // Listen to authentication state changes
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                // User is signed in
+                console.log("User signed in:", user.email);
+                fetchUserData();  // Fetch user data after login
+            } else {
+                // No user is signed in
+                console.log("No user signed in");
+            }
+        });
     </script>
 </body>
 </html>
