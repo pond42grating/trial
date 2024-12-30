@@ -178,32 +178,41 @@
 
   // Handle Sign-Up
   function signUp() {
-    const username = document.getElementById("signupUsername").value;
-    const password = document.getElementById("signupPassword").value;
-    const secretCode = document.getElementById("signupSecretCode").value;
+      var username = document.getElementById('username').value;
+      var password = document.getElementById('password').value;
+      var secretCode = document.getElementById('secretCode').value;
 
-    if (username === "" || password === "" || secretCode === "") {
-      alert("Please fill in all fields.");
-      return;
+      if (!username || !password || !secretCode) {
+        alert("All fields are required!");
+        return;
+      }
+
+      // Check if the username already exists
+      if (localStorage.getItem(username)) {
+        alert("Username already exists!");
+        return;
+      }
+
+      // Create user object
+      var user = {
+        username: username,
+        password: password,
+        secretCode: secretCode,
+        approved: false, // User is pending approval
+      };
+
+      // Add the user to pending approvals
+      var pendingApprovals = JSON.parse(localStorage.getItem("pendingApprovals")) || [];
+      pendingApprovals.push(user);
+      localStorage.setItem("pendingApprovals", JSON.stringify(pendingApprovals));
+
+      alert("Sign up successful! Your account is pending admin approval.");
+      window.location.href = "login.html"; // Redirect to login page after sign-up
     }
 
-    // Store sign-up request in "pending approvals"
-    const pendingApprovals = JSON.parse(localStorage.getItem("pendingApprovals")) || [];
-    const existingUser = pendingApprovals.find((user) => user.username === username);
-
-    if (existingUser) {
-      alert("Username already requested. Wait for admin approval.");
-      return;
-    }
-
-    const userRequest = { username, password, secretCode, approved: false };
-    pendingApprovals.push(userRequest);
-    localStorage.setItem("pendingApprovals", JSON.stringify(pendingApprovals));
-
-    alert("Sign-up request sent to admin. Please wait for approval.");
-    window.location.href = "index.html"; // Redirect to login page
-  }
-
+    function showLogin() {
+      window.location.href = "index.html";
+      
     function resetPassword() {
       const username = document.getElementById('forgotUsername').value;
       const secretCode = document.getElementById('forgotSecretCode').value;
