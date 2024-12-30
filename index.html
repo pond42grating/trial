@@ -1,9 +1,23 @@
-// Import Firebase modules
-import { getFirestore, doc, setDoc } from "firebase/firestore"; 
-import { initializeApp } from "firebase/app";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Send Data to Firebase</title>
 
-// Firebase configuration
-const firebaseConfig = {
+  <!-- Firebase SDK via CDN -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js"></script>
+</head>
+<body>
+
+  <h1>Send Data to Firestore</h1>
+
+  <button onclick="sendDataToFirebase()">Send Data</button>
+
+  <script>
+    // Firebase configuration
+    const firebaseConfig = {
     apiKey: "AIzaSyAXZgxM6PU-T3D2811KnBszblRWju7rv1Y",
     authDomain: "dws-management.firebaseapp.com",
     projectId: "dws-management",
@@ -13,42 +27,42 @@ const firebaseConfig = {
     measurementId: "G-6VZVVDS3S0"
   };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+    // Initialize Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore(app);
 
-// Function to send data to Firebase Firestore
-async function sendDataToFirebase() {
-  try {
-    // Data to save
-    const dwsData = {
-      dwsNo: 1,
-      date: "2024-12-30",
-      structureName: "Building A",
-      siNo: "12345",
-      workDescription: "Electrical Wiring",
-      location: "Section 1",
-      manpower: [
-        { badgeNo: "001", name: "John Doe", jobTitle: "Electrician", workingHours: 8 },
-        { badgeNo: "002", name: "Jane Smith", jobTitle: "Technician", workingHours: 7 },
-      ],
-      equipment: [
-        { equipmentName: "Drill", workingHours: 5 },
-        { equipmentName: "Saw", workingHours: 4 },
-      ],
-      materials: [
-        { materialName: "Wire", quantity: 100 },
-        { materialName: "Nails", quantity: 50 },
-      ],
-    };
+    // Function to send data to Firebase Firestore
+    async function sendDataToFirebase() {
+      try {
+        const dwsData = {
+          dwsNo: 1,
+          date: "2024-12-30",
+          structureName: "Building A",
+          siNo: "12345",
+          workDescription: "Electrical Wiring",
+          location: "Section 1",
+          manpower: [
+            { badgeNo: "001", name: "John Doe", jobTitle: "Electrician", workingHours: 8 },
+            { badgeNo: "002", name: "Jane Smith", jobTitle: "Technician", workingHours: 7 },
+          ],
+          equipment: [
+            { equipmentName: "Drill", workingHours: 5 },
+            { equipmentName: "Saw", workingHours: 4 },
+          ],
+          materials: [
+            { materialName: "Wire", quantity: 100 },
+            { materialName: "Nails", quantity: 50 },
+          ],
+        };
 
-    // Save data to Firestore
-    await setDoc(doc(db, "dwsSchedules", `${dwsData.dwsNo}`), dwsData);
-    console.log("Data successfully saved to Firebase");
-  } catch (error) {
-    console.error("Error saving data to Firebase: ", error);
-  }
-}
+        await db.collection("dwsSchedules").doc(`${dwsData.dwsNo}`).set(dwsData);
+        alert("Data successfully saved to Firebase!");
+      } catch (error) {
+        console.error("Error saving data to Firebase: ", error);
+        alert("Error saving data to Firebase.");
+      }
+    }
+  </script>
 
-// Call the function to send data
-sendDataToFirebase();
+</body>
+</html>
