@@ -7,7 +7,7 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      background-color: #f4f4f4;
+      background-color: #f4f4f9;
       padding: 20px;
     }
 
@@ -20,17 +20,21 @@
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     }
 
+    h2 {
+      text-align: center;
+    }
+
     .input-field {
       width: 100%;
-      padding: 10px;
-      margin-bottom: 15px;
+      padding: 12px;
+      margin: 10px 0;
       border: 1px solid #ddd;
       border-radius: 5px;
     }
 
     .button {
       width: 100%;
-      padding: 10px;
+      padding: 12px;
       background-color: #4CAF50;
       color: white;
       border: none;
@@ -41,18 +45,6 @@
     .button:hover {
       background-color: #45a049;
     }
-
-    .login-link {
-      text-align: center;
-      margin-top: 10px;
-    }
-
-    #passwordStrengthIndicator {
-      height: 5px;
-      margin-top: 5px;
-      width: 100%;
-    }
-
   </style>
 </head>
 <body>
@@ -64,98 +56,42 @@
   <input type="email" id="email" class="input-field" placeholder="Email" required>
   <input type="password" id="password" class="input-field" placeholder="Password" required>
   <input type="password" id="confirmPassword" class="input-field" placeholder="Confirm Password" required>
+  <input type="text" id="secretCode" class="input-field" placeholder="Secret Code" required>
   
-  <!-- Password Strength Indicator -->
-  <div id="passwordStrengthIndicator"></div>
-  
-  <label>
-    <input type="checkbox" id="terms"> I agree to the Terms and Conditions
-  </label>
-
-  <button class="button" onclick="signup()">Sign Up</button>
-
-  <div class="login-link">
-    <p>Already have an account? <a href="index.html">Login</a></p>
-  </div>
+  <button class="button" onclick="signUp()">Sign Up</button>
 </div>
 
 <script>
-  // Check if username exists in localStorage
-  function checkUniqueUsername(username) {
-    return localStorage.getItem(username) === null;
-  }
-
-  // Password strength calculation
-  function updatePasswordStrength(password) {
-    var strength = 0;
-    if (password.length >= 8) strength += 1;
-    if (password.match(/[a-z]/)) strength += 1;
-    if (password.match(/[A-Z]/)) strength += 1;
-    if (password.match(/[0-9]/)) strength += 1;
-    if (password.match(/[\W_]/)) strength += 1;
-
-    var strengthBar = document.getElementById('passwordStrengthIndicator');
-    if (strength === 1) {
-      strengthBar.innerHTML = `<div style="width: 20%; background-color: red;"></div>`;
-    } else if (strength === 2) {
-      strengthBar.innerHTML = `<div style="width: 40%; background-color: orange;"></div>`;
-    } else if (strength === 3) {
-      strengthBar.innerHTML = `<div style="width: 60%; background-color: yellow;"></div>`;
-    } else if (strength === 4) {
-      strengthBar.innerHTML = `<div style="width: 80%; background-color: lightgreen;"></div>`;
-    } else if (strength === 5) {
-      strengthBar.innerHTML = `<div style="width: 100%; background-color: green;"></div>`;
-    } else {
-      strengthBar.innerHTML = `<div style="width: 0%; background-color: red;"></div>`;
-    }
-  }
-
-  // Sign Up function with validation
-  function signup() {
+  // Handle user sign up
+  function signUp() {
     var username = document.getElementById("username").value;
     var email = document.getElementById("email").value;
     var password = document.getElementById("password").value;
     var confirmPassword = document.getElementById("confirmPassword").value;
-    var termsAccepted = document.getElementById("terms").checked;
+    var secretCode = document.getElementById("secretCode").value;
 
-    if (!checkUniqueUsername(username)) {
-      alert("Username already taken. Please choose another.");
-      return;
-    }
-
+    // Check if passwords match
     if (password !== confirmPassword) {
       alert("Passwords do not match.");
       return;
     }
 
-    if (!termsAccepted) {
-      alert("You must agree to the Terms and Conditions.");
-      return;
-    }
-
-    // Store user data in localStorage (with a pending status)
+    // Create user object
     var user = {
+      username: username,
       email: email,
       password: password,
-      secretCode: generateSecretCode(),
-      status: "pending"
+      secretCode: secretCode,
+      status: "pending"  // Initially set to pending for admin approval
     };
+
+    // Store the user in localStorage (using the username as key)
     localStorage.setItem(username, JSON.stringify(user));
 
-    alert("Sign up successful! Awaiting admin approval.");
+    // Redirect to the login page after successful sign up
+    alert("Sign Up successful! Waiting for Admin approval.");
     window.location.href = "index.html";  // Redirect to login page
   }
-
-  // Generate a random secret code
-  function generateSecretCode() {
-    return Math.floor(Math.random() * 1000000);
-  }
-
-  // Update password strength indicator when typing
-  document.getElementById('password').addEventListener('input', function() {
-    updatePasswordStrength(this.value);
-  });
-
 </script>
 
 </body>
