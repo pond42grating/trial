@@ -3,157 +3,130 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Dashboard</title>
+  <title>Admin Panel</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background-color: #f4f4f9;
-      margin: 0;
-      padding: 0;
-    }
-
-    .admin-container {
-      width: 100%;
-      max-width: 1200px;
-      margin: 0 auto;
+      background-color: #f4f4f4;
       padding: 20px;
     }
 
-    h2 {
-      text-align: center;
-      margin-bottom: 20px;
+    .admin-container {
+      max-width: 800px;
+      margin: 0 auto;
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     }
 
-    .user-list, .user-actions {
-      margin-top: 20px;
+    table {
+      width: 100%;
+      border-collapse: collapse;
     }
 
-    .user-item {
-      display: flex;
-      justify-content: space-between;
+    th, td {
       padding: 10px;
-      border-bottom: 1px solid #ddd;
+      text-align: left;
+      border: 1px solid #ddd;
+    }
+
+    th {
+      background-color: #f4f4f4;
     }
 
     .button {
-      padding: 8px 16px;
-      background-color: #007BFF;
-      color: #fff;
+      padding: 10px 15px;
+      margin: 5px;
+      background-color: #4CAF50;
+      color: white;
       border: none;
       border-radius: 5px;
       cursor: pointer;
     }
 
     .button:hover {
-      background-color: #0056b3;
+      background-color: #45a049;
     }
 
-    .search-bar {
-      margin-bottom: 20px;
-      width: 100%;
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 5px;
-    }
-
-    .back-to-login-link {
-      text-align: center;
-      margin-top: 15px;
+    .logout-btn {
+      margin-top: 20px;
+      display: inline-block;
+      background-color: #f44336;
     }
   </style>
 </head>
 <body>
 
-  <div class="admin-container">
-    <h2>Admin Dashboard</h2>
-    
-    <!-- Search Bar for Users -->
-    <input type="text" id="searchUsers" class="search-bar" placeholder="Search by username..." oninput="searchUsers()">
-    
-    <div class="user-list" id="userList"></div>
+<div class="admin-container">
+  <h2>Admin Dashboard</h2>
 
-    <!-- Back to Login Page -->
-    <div class="back-to-login-link">
-      <p><a href="index.html">Back to Login</a></p>
-    </div>
-  </div>
+  <h3>Pending User Approvals</h3>
+  <table id="userTable">
+    <thead>
+      <tr>
+        <th>Username</th>
+        <th>Email</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="userTableBody">
+      <!-- Users will be populated here -->
+    </tbody>
+  </table>
 
-  <script>
-    // Function to populate user list from localStorage
-    function loadUsers() {
-      const users = Object.keys(localStorage);
-      const userList = document.getElementById('userList');
-      userList.innerHTML = '';
+  <button class="button logout-btn" onclick="logout()">Log Out</button>
+</div>
 
-      users.forEach(username => {
-        const user = JSON.parse(localStorage.getItem(username));
-        if (user) {
-          const userItem = document.createElement('div');
-          userItem.classList.add('user-item');
-          userItem.innerHTML = `
-            <span>${user.username}</span>
-            <span>${user.role}</span>
-            <button class="button" onclick="approveUser('${username}')">Approve</button>
-            <button class="button" onclick="rejectUser('${username}')">Reject</button>
-            <button class="button" onclick="removeUser('${username}')">Remove</button>
+<script>
+  // Fetch pending users and display them
+  function loadPendingUsers() {
+    var userTableBody = document.getElementById("userTableBody");
+    userTableBody.innerHTML = "";  // Clear previous entries
+
+    for (var key in localStorage) {
+      if (localStorage.hasOwnProperty(key)) {
+        var user = JSON.parse(localStorage.getItem(key));
+        if (user.status === "pending") {
+          var row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${key}</td>
+            <td>${user.email}</td>
+            <td>${user.status}</td>
+            <td>
+              <button class="button" onclick="approveUser('${key}')">Approve</button>
+              <button class="button" onclick="rejectUser('${key}')">Reject</button>
+            </td>
           `;
-          userList.appendChild(userItem);
+          userTableBody.appendChild(row);
         }
-      });
+      }
     }
+  }
 
-    // Function to approve a user
-    function approveUser(username) {
-      const user = JSON.parse(localStorage.getItem(username));
-      user.role = 'approved';
-      localStorage.setItem(username, JSON.stringify(user));
-            alert(`${username} has been approved!`);
-      loadUsers(); // Refresh the user list after approval
-    }
+  // Approve user and change status to 'approved'
+  function approveUser(username) {
+    var user = JSON.parse(localStorage.getItem(username));
+    user.status = "approved";
+    localStorage.setItem(username, JSON.stringify(user));
+    loadPendingUsers();  // Reload the table
+  }
 
-    // Function to reject a user
-    function rejectUser(username) {
-      const user = JSON.parse(localStorage.getItem(username));
-      user.role = 'rejected';
-      localStorage.setItem(username, JSON.stringify(user));
-      alert(`${username} has been rejected.`);
-      loadUsers(); // Refresh the user list after rejection
-    }
+  // Reject user and remove from localStorage
+  function rejectUser(username) {
+    localStorage.removeItem(username);
+    loadPendingUsers();  // Reload the table
+  }
 
-    // Function to remove a user
-    function removeUser(username) {
-      localStorage.removeItem(username);
-      alert(`${username} has been removed from the system.`);
-      loadUsers(); // Refresh the user list after removal
-    }
+  // Logout function to clear session and redirect to login
+  function logout() {
+    window.location.href = "index.html";  // Redirect to login page
+  }
 
-    // Function to search users based on input
-    function searchUsers() {
-      const searchQuery = document.getElementById('searchUsers').value.toLowerCase();
-      const users = Object.keys(localStorage);
-      const userList = document.getElementById('userList');
-      userList.innerHTML = '';
-
-      users.forEach(username => {
-        const user = JSON.parse(localStorage.getItem(username));
-        if (user && user.username.toLowerCase().includes(searchQuery)) {
-          const userItem = document.createElement('div');
-          userItem.classList.add('user-item');
-          userItem.innerHTML = `
-            <span>${user.username}</span>
-            <span>${user.role}</span>
-            <button class="button" onclick="approveUser('${username}')">Approve</button>
-            <button class="button" onclick="rejectUser('${username}')">Reject</button>
-            <button class="button" onclick="removeUser('${username}')">Remove</button>
-          `;
-          userList.appendChild(userItem);
-        }
-      });
-    }
-
-    // Initial load of users
-    window.onload = loadUsers;
-  </script>
+  // Load pending users on page load
+  window.onload = loadPendingUsers;
+</script>
 
 </body>
 </html>
