@@ -3,16 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sign Up</title>
+  <title>Firestore Data Check</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background-color: #f4f4f9;
+      background-color: #f9fafb;
       padding: 20px;
+      text-align: center;
     }
 
-    .signup-container {
-      max-width: 400px;
+    .container {
+      max-width: 600px;
       margin: 0 auto;
       background-color: white;
       padding: 20px;
@@ -20,53 +21,44 @@
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     }
 
-    h2 {
-      text-align: center;
-    }
-
-    .input-field {
-      width: 100%;
-      padding: 12px;
-      margin: 10px 0;
-      border: 1px solid #ddd;
-      border-radius: 5px;
-    }
-
-    .button {
-      width: 100%;
-      padding: 12px;
+    button {
       background-color: #4CAF50;
       color: white;
       border: none;
+      padding: 10px 20px;
       border-radius: 5px;
       cursor: pointer;
+      font-size: 16px;
     }
 
-    .button:hover {
+    button:hover {
       background-color: #45a049;
+    }
+
+    .result {
+      margin-top: 20px;
+      padding: 10px;
+      background-color: #f4f4f4;
+      border-radius: 5px;
+      overflow-x: auto;
+      text-align: left;
     }
   </style>
 </head>
 <body>
 
-<div class="signup-container">
-  <h2>Sign Up</h2>
-  
-  <input type="text" id="username" class="input-field" placeholder="Username" required>
-  <input type="email" id="email" class="input-field" placeholder="Email" required>
-  <input type="password" id="password" class="input-field" placeholder="Password" required>
-  <input type="password" id="confirmPassword" class="input-field" placeholder="Confirm Password" required>
-  <input type="text" id="secretCode" class="input-field" placeholder="Secret Code" required>
-  
-  <button class="button" onclick="signUp()">Sign Up</button>
+<div class="container">
+  <h2>Check Data at /User/User/Main</h2>
+  <button onclick="checkData()">Check Data</button>
+  <div class="result" id="result">No data retrieved yet.</div>
 </div>
 
 <script type="module">
   // Import Firebase modules
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
-  import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+  import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
 
-  // Your Firebase configuration
+  // Firebase configuration
   const firebaseConfig = {
     apiKey: "AIzaSyAXZgxM6PU-T3D2811KnBszblRWju7rv1Y",
     authDomain: "dws-management.firebaseapp.com",
@@ -81,40 +73,26 @@
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  // Sign-Up Function
-  async function signUp() {
-    const username = document.getElementById("username").value;
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
-    const confirmPassword = document.getElementById("confirmPassword").value;
-    const secretCode = document.getElementById("secretCode").value;
-
-    // Validate passwords match
-    if (password !== confirmPassword) {
-      alert("Passwords do not match.");
-      return;
-    }
-
-    // User data object
-    const user = {
-      username,
-      email,
-      password,
-      secretCode,
-      status: "pending" // Initially set to pending for admin approval
-    };
+  // Function to check data
+  async function checkData() {
+    const resultDiv = document.getElementById("result");
 
     try {
-      // Save data to Firestore
-      await setDoc(doc(db, "User", username), {
-        Main: user
-      });
+      // Retrieve the document at /User/User
+      const docRef = doc(db, "User", "User");
+      const docSnap = await getDoc(docRef);
 
-      alert("Sign Up successful! Waiting for Admin approval.");
-      window.location.href = "index.html"; // Redirect to login page
+      if (docSnap.exists()) {
+        const data = docSnap.data().Main; // Retrieve the "Main" field
+        resultDiv.innerText = data
+          ? `Data found: ${JSON.stringify(data, null, 2)}`
+          : "Main field is empty.";
+      } else {
+        resultDiv.innerText = "No document found at /User/User.";
+      }
     } catch (error) {
-      console.error("Error saving data:", error);
-      alert("Error saving data. Please try again.");
+      console.error("Error retrieving data:", error);
+      resultDiv.innerText = "Error retrieving data. Check console for details.";
     }
   }
 </script>
