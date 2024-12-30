@@ -1,1 +1,99 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Forget Password</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      padding: 20px;
+    }
+
+    .forget-container {
+      max-width: 400px;
+      margin: 0 auto;
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .input-field {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+
+    .button {
+      width: 100%;
+      padding: 10px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .button:hover {
+      background-color: #45a049;
+    }
+
+    .login-link {
+      text-align: center;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="forget-container">
+  <h2>Forgot Password</h2>
+
+  <!-- Username Input -->
+  <input type="text" id="username" class="input-field" placeholder="Enter Username" required>
+
+  <!-- Secret Code Input -->
+  <input type="text" id="secretCode" class="input-field" placeholder="Enter Secret Code" required>
+
+  <!-- New Password Input -->
+  <input type="password" id="newPassword" class="input-field" placeholder="Enter New Password" required>
+
+  <!-- Reset Password Button -->
+  <button class="button" onclick="resetPassword()">Reset Password</button>
+
+  <!-- Login Link -->
+  <div class="login-link">
+    <p>Remember your password? <a href="index.html">Login</a></p>
+  </div>
+</div>
+
+<script>
+  function resetPassword() {
+    var username = document.getElementById("username").value;
+    var secretCode = document.getElementById("secretCode").value;
+    var newPassword = document.getElementById("newPassword").value;
+
+    // Check if user exists in localStorage
+    var user = JSON.parse(localStorage.getItem(username));
+    if (user) {
+      if (user.secretCode === secretCode) {
+        user.password = newPassword; // Update the password
+        localStorage.setItem(username, JSON.stringify(user)); // Save back to localStorage
+        alert("Password reset successfully. You can now login.");
+        window.location.href = "index.html"; // Redirect to login page
+      } else {
+        alert("Incorrect secret code.");
+      }
+    } else {
+      alert("User not found.");
+    }
+  }
+</script>
+
+</body>
+</html>
