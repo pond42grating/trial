@@ -1,1 +1,91 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage DWS</title>
+    <style>
+        /* Similar styles as before */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9fafb;
+            margin: 0;
+            padding: 0;
+        }
+
+        .main-content {
+            margin-top: 80px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: calc(100vh - 80px);
+            gap: 20px;
+        }
+
+        .button {
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            cursor: pointer;
+            border-radius: 8px;
+            width: 250px;
+            text-align: center;
+        }
+
+        .button:hover {
+            background-color: #1976D2;
+        }
+
+        .filter-btn, .search-btn, .export-btn {
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Manage DWS</h1>
+        <div>
+            <button class="logout-btn" onclick="window.location.href = 'index.html'">Logout</button>
+        </div>
+    </header>
+
+    <div class="main-content">
+        <!-- Manage DWS Section with filters, export options, and search -->
+        <div class="filter-container">
+            <select>
+                <option value="date-range">Date Range</option>
+                <option value="status">Status</option>
+            </select>
+            <select>
+                <option value="pending">Pending</option>
+                <option value="completed">Completed</option>
+                <option value="in-progress">In Progress</option>
+            </select>
+        </div>
+        <input type="text" class="search-input" id="searchInput" placeholder="Search by Structure/TQ/SI No./DWS No." />
+        <button class="search-btn" onclick="searchDWS()">Search</button>
+        <div>
+            <button class="export-btn" onclick="showModal('exportPdfModal')">Export as PDF</button>
+            <button class="export-btn" onclick="showModal('exportExcelModal')">Export as Excel</button>
+        </div>
+        <button class="button" onclick="backToMain()">Back</button>
+    </div>
+
+    <script>
+        function searchDWS() {
+            var searchValue = document.getElementById('searchInput').value;
+            alert('Searching for: ' + searchValue);
+        }
+
+        function backToMain() {
+            window.location.href = 'login.html';
+        }
+
+        // Modal functions are omitted for brevity, but you can implement them similarly.
+    </script>
+</body>
+</html>
