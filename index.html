@@ -175,22 +175,35 @@
   }
 }
 
-    function signUp() {
-      const username = document.getElementById('signupUsername').value;
-      const password = document.getElementById('signupPassword').value;
-      const confirmPassword = document.getElementById('signupConfirmPassword').value;
-      const secretCode = document.getElementById('signupSecretCode').value;
+    <script>
+  // Handle Sign-Up
+  function signUp() {
+    const username = document.getElementById("signupUsername").value;
+    const password = document.getElementById("signupPassword").value;
+    const secretCode = document.getElementById("signupSecretCode").value;
 
-      if (password !== confirmPassword) {
-        alert('Passwords do not match!');
-        return;
-      }
-
-      const user = { username, password, secretCode };
-      localStorage.setItem(username, JSON.stringify(user));
-      alert('Account created successfully!');
-      showLoginPage();
+    if (username === "" || password === "" || secretCode === "") {
+      alert("Please fill in all fields.");
+      return;
     }
+
+    // Store sign-up request in "pending approvals"
+    const pendingApprovals = JSON.parse(localStorage.getItem("pendingApprovals")) || [];
+    const existingUser = pendingApprovals.find((user) => user.username === username);
+
+    if (existingUser) {
+      alert("Username already requested. Wait for admin approval.");
+      return;
+    }
+
+    const userRequest = { username, password, secretCode, approved: false };
+    pendingApprovals.push(userRequest);
+    localStorage.setItem("pendingApprovals", JSON.stringify(pendingApprovals));
+
+    alert("Sign-up request sent to admin. Please wait for approval.");
+    window.location.href = "index.html"; // Redirect to login page
+  }
+</script>
 
     function resetPassword() {
       const username = document.getElementById('forgotUsername').value;
