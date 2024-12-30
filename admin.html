@@ -10,159 +10,150 @@
       background-color: #f4f4f9;
       margin: 0;
       padding: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
     }
 
     .admin-container {
-      background-color: #fff;
-      padding: 30px;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
       width: 100%;
-      max-width: 700px;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
     }
 
     h2 {
       text-align: center;
-      color: #333;
       margin-bottom: 20px;
     }
 
+    .user-list, .user-actions {
+      margin-top: 20px;
+    }
+
+    .user-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+    }
+
     .button {
-      width: 100%;
-      padding: 12px;
+      padding: 8px 16px;
       background-color: #007BFF;
-      color: white;
+      color: #fff;
       border: none;
       border-radius: 5px;
-      font-size: 16px;
-      margin: 10px 0;
       cursor: pointer;
-      transition: background-color 0.3s;
     }
 
     .button:hover {
       background-color: #0056b3;
     }
 
-    .section {
-      margin: 20px 0;
-    }
-
-    .section h3 {
-      margin-bottom: 10px;
-      color: #007BFF;
-    }
-
-    .user-list {
-      list-style: none;
-      padding: 0;
-    }
-
-    .user-list li {
-      display: flex;
-      justify-content: space-between;
+    .search-bar {
+      margin-bottom: 20px;
+      width: 100%;
       padding: 10px;
-      background-color: #f9f9f9;
-      margin-bottom: 5px;
       border: 1px solid #ddd;
       border-radius: 5px;
     }
 
-    .user-list button {
-      padding: 5px 10px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    .approve-btn {
-      background-color: #28a745;
-      color: white;
-    }
-
-    .approve-btn:hover {
-      background-color: #218838;
-    }
-
-    .reject-btn {
-      background-color: #dc3545;
-      color: white;
-    }
-
-    .reject-btn:hover {
-      background-color: #c82333;
+    .back-to-login-link {
+      text-align: center;
+      margin-top: 15px;
     }
   </style>
 </head>
 <body>
+
   <div class="admin-container">
     <h2>Admin Dashboard</h2>
+    
+    <!-- Search Bar for Users -->
+    <input type="text" id="searchUsers" class="search-bar" placeholder="Search by username..." oninput="searchUsers()">
+    
+    <div class="user-list" id="userList"></div>
 
-    <!-- Pending Approvals Section -->
-    <div class="section" id="pendingApprovalsSection">
-      <h3>Pending Approvals</h3>
-      <ul class="user-list" id="pendingApprovalsList">
-        <!-- Dynamically added pending approvals -->
-      </ul>
+    <!-- Back to Login Page -->
+    <div class="back-to-login-link">
+      <p><a href="login.html">Back to Login</a></p>
     </div>
   </div>
 
   <script>
-    // Load Pending Approvals
-    function loadPendingApprovals() {
-      const pendingApprovals = JSON.parse(localStorage.getItem("pendingApprovals")) || [];
-      const list = document.getElementById("pendingApprovalsList");
-      list.innerHTML = "";
+    // Function to populate user list from localStorage
+    function loadUsers() {
+      const users = Object.keys(localStorage);
+      const userList = document.getElementById('userList');
+      userList.innerHTML = '';
 
-      pendingApprovals.forEach((user) => {
-        const listItem = document.createElement("li");
-        listItem.innerHTML = `
-          ${user.username}
-          <button class="approve-btn" onclick="approveUser('${user.username}')">Approve</button>
-          <button class="reject-btn" onclick="rejectUser('${user.username}')">Reject</button>
-        `;
-        list.appendChild(listItem);
+      users.forEach(username => {
+        const user = JSON.parse(localStorage.getItem(username));
+        if (user) {
+          const userItem = document.createElement('div');
+          userItem.classList.add('user-item');
+          userItem.innerHTML = `
+            <span>${user.username}</span>
+            <span>${user.role}</span>
+            <button class="button" onclick="approveUser('${username}')">Approve</button>
+            <button class="button" onclick="rejectUser('${username}')">Reject</button>
+            <button class="button" onclick="removeUser('${username}')">Remove</button>
+          `;
+          userList.appendChild(userItem);
+        }
       });
     }
 
-    // Approve User
+    // Function to approve a user
     function approveUser(username) {
-      const pendingApprovals = JSON.parse(localStorage.getItem("pendingApprovals")) || [];
-      const users = JSON.parse(localStorage.getItem("users")) || [];
-      const userIndex = pendingApprovals.findIndex((user) => user.username === username);
-
-      if (userIndex !== -1) {
-        const user = pendingApprovals[userIndex];
-        user.approved = true;
-        users.push(user);
-        pendingApprovals.splice(userIndex, 1);
-        localStorage.setItem("users", JSON.stringify(users));
-        localStorage.setItem("pendingApprovals", JSON.stringify(pendingApprovals));
-        alert(`${username} has been approved.`);
-        loadPendingApprovals();
-      }
+      const user = JSON.parse(localStorage.getItem(username));
+      user.role = 'approved';
+      localStorage.setItem(username, JSON.stringify(user));
+            alert(`${username} has been approved!`);
+      loadUsers(); // Refresh the user list after approval
     }
 
-    // Reject User
+    // Function to reject a user
     function rejectUser(username) {
-      const pendingApprovals = JSON.parse(localStorage.getItem("pendingApprovals")) || [];
-      const userIndex = pendingApprovals.findIndex((user) => user.username === username);
-
-      if (userIndex !== -1) {
-        pendingApprovals.splice(userIndex, 1);
-        localStorage.setItem("pendingApprovals", JSON.stringify(pendingApprovals));
-        alert(`${username} has been rejected.`);
-        loadPendingApprovals();
-      }
+      const user = JSON.parse(localStorage.getItem(username));
+      user.role = 'rejected';
+      localStorage.setItem(username, JSON.stringify(user));
+      alert(`${username} has been rejected.`);
+      loadUsers(); // Refresh the user list after rejection
     }
 
-    // Initialize Admin Dashboard
-    window.onload = loadPendingApprovals;
+    // Function to remove a user
+    function removeUser(username) {
+      localStorage.removeItem(username);
+      alert(`${username} has been removed from the system.`);
+      loadUsers(); // Refresh the user list after removal
+    }
+
+    // Function to search users based on input
+    function searchUsers() {
+      const searchQuery = document.getElementById('searchUsers').value.toLowerCase();
+      const users = Object.keys(localStorage);
+      const userList = document.getElementById('userList');
+      userList.innerHTML = '';
+
+      users.forEach(username => {
+        const user = JSON.parse(localStorage.getItem(username));
+        if (user && user.username.toLowerCase().includes(searchQuery)) {
+          const userItem = document.createElement('div');
+          userItem.classList.add('user-item');
+          userItem.innerHTML = `
+            <span>${user.username}</span>
+            <span>${user.role}</span>
+            <button class="button" onclick="approveUser('${username}')">Approve</button>
+            <button class="button" onclick="rejectUser('${username}')">Reject</button>
+            <button class="button" onclick="removeUser('${username}')">Remove</button>
+          `;
+          userList.appendChild(userItem);
+        }
+      });
+    }
+
+    // Initial load of users
+    window.onload = loadUsers;
   </script>
+
 </body>
 </html>
