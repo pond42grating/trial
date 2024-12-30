@@ -72,7 +72,7 @@
 <script type="module">
     // Import necessary Firebase functions
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
-    import { getAuth, sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink, ActionCodeSettings } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
+    import { getAuth, sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
 
     // Firebase configuration
     const firebaseConfig = {
@@ -92,10 +92,15 @@
     // Function to send OTP via email
     function sendOTP() {
         const email = document.getElementById("email").value;
+        if (!email) {
+            document.getElementById("status").textContent = "Please enter a valid email address.";
+            return;
+        }
+
         const actionCodeSettings = {
             // URL you want to redirect back to. The domain (www.example.com) for this
             // from Firebase console will be dynamically replaced.
-            url: window.location.href, 
+            url: window.location.href, // Redirect URL after email is verified
             handleCodeInApp: true
         };
 
@@ -117,11 +122,12 @@
     function verifyOTP() {
         const email = window.localStorage.getItem('emailForSignIn');
         const otp = document.getElementById("otp").value;
-        
+
         if (isSignInWithEmailLink(auth, otp)) {
             signInWithEmailLink(auth, email, otp)
                 .then(() => {
                     document.getElementById("status").textContent = "Email verified successfully!";
+                    window.localStorage.removeItem('emailForSignIn');
                 })
                 .catch((error) => {
                     const errorCode = error.code;
