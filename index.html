@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -77,7 +76,11 @@
       text-decoration: underline;
     }
 
-    /* Password strength bar */
+    .password-strength-indicator {
+      height: 20px;
+      margin-bottom: 10px;
+    }
+
     .strength-bar {
       height: 5px;
       margin-top: 10px;
@@ -91,136 +94,120 @@
       display: block;
       height: 100%;
     }
-
-    /* Limit height of password strength indicator to prevent overlap */
-    .password-strength-indicator {
-      margin-bottom: 20px;
-      height: 20px; /* Adjust height to prevent overlap */
-    }
-
   </style>
 </head>
 <body>
-
   <!-- Login Container -->
-  <div class="login-container">
+  <div class="login-container" id="loginPage">
     <h2>Login</h2>
-    
-    <!-- Username Input -->
-    <input type="text" id="username" class="input-field" placeholder="Username" required>
-    
-    <!-- Password Input -->
-    <input type="password" id="password" class="input-field" placeholder="Password" required>
-    
-    <!-- Password Strength Indicator -->
-    <div class="password-strength-indicator" id="passwordStrengthIndicator"></div>
-    
-    <!-- Sign In Button -->
+    <input type="text" id="username" class="input-field" placeholder="Username">
+    <input type="password" id="password" class="input-field" placeholder="Password">
     <button class="button" onclick="login()">Sign In</button>
-    
-    <!-- Sign Up Link -->
     <div class="sign-up-link">
-      <p>Don't have an account? <a href="#" onclick="showMsg('Sign Up')">Sign Up</a></p>
+      <p>Don't have an account? <a href="#" onclick="showSignUpPage()">Sign Up</a></p>
     </div>
-    
-    <!-- Forgot Password Link -->
     <div class="forgot-password">
-      <p><a href="#" onclick="showMsg('Forgot Password')">Forgot Password?</a></p>
+      <p><a href="#" onclick="showForgotPasswordPage()">Forgot Password?</a></p>
     </div>
   </div>
 
-  <!-- Modal for displaying messages -->
-  <div id="msgModal" style="display: none;">
-    <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); display: flex; justify-content: center; align-items: center; z-index: 1000;">
-      <div style="background-color: white; padding: 20px; border-radius: 8px; text-align: center; width: 300px;">
-        <h4 id="msgText">Message</h4>
-        <button onclick="closeModal()">Close</button>
-      </div>
-    </div>
+  <!-- Sign Up Page -->
+  <div class="login-container" id="signUpPage" style="display:none;">
+    <h2>Sign Up</h2>
+    <input type="text" id="signupUsername" class="input-field" placeholder="Username">
+    <input type="password" id="signupPassword" class="input-field" placeholder="Password">
+    <input type="password" id="signupConfirmPassword" class="input-field" placeholder="Confirm Password">
+    <input type="text" id="signupSecretCode" class="input-field" placeholder="Secret Code">
+    <div id="passwordStrengthIndicator"></div>
+    <button class="button" onclick="signUp()">Create Account</button>
+    <button class="button" onclick="showLoginPage()">Back</button>
+  </div>
+
+  <!-- Forget Password Page -->
+  <div class="login-container" id="forgotPasswordPage" style="display:none;">
+    <h2>Forgot Password</h2>
+    <input type="text" id="forgotUsername" class="input-field" placeholder="Username">
+    <input type="text" id="forgotSecretCode" class="input-field" placeholder="Secret Code">
+    <input type="password" id="newPassword" class="input-field" placeholder="New Password">
+    <input type="password" id="confirmNewPassword" class="input-field" placeholder="Confirm New Password">
+    <button class="button" onclick="resetPassword()">Reset Password</button>
+    <button class="button" onclick="showLoginPage()">Back</button>
   </div>
 
   <script>
-    // Function to show the message box
-    function showMsg(message) {
-      document.getElementById('msgText').innerText = `${message} functionality is being developed.`;
-      document.getElementById('msgModal').style.display = 'flex';
+    function showLoginPage() {
+      document.getElementById('loginPage').style.display = 'block';
+      document.getElementById('signUpPage').style.display = 'none';
+      document.getElementById('forgotPasswordPage').style.display = 'none';
     }
 
-    // Function to close the modal
-    function closeModal() {
-      document.getElementById('msgModal').style.display = 'none';
+    function showSignUpPage() {
+      document.getElementById('loginPage').style.display = 'none';
+      document.getElementById('signUpPage').style.display = 'block';
+      document.getElementById('forgotPasswordPage').style.display = 'none';
     }
 
-    // Handle user login
+    function showForgotPasswordPage() {
+      document.getElementById('loginPage').style.display = 'none';
+      document.getElementById('signUpPage').style.display = 'none';
+      document.getElementById('forgotPasswordPage').style.display = 'block';
+    }
+
     function login() {
-      var username = document.getElementById("username").value;
-      var password = document.getElementById("password").value;
+  const username = document.getElementById('username').value;
+  const password = document.getElementById('password').value;
+  const user = JSON.parse(localStorage.getItem(username));
 
-      // Admin credentials check
-      if (username === "admin" && password === "admin123") {
-        localStorage.setItem("role", "admin");
-        window.location.href = "login.html"; // Redirect to login page after admin login
-        return; // Stop further checks if admin login successful
+  if (username === 'admin' && password === 'admin123') {
+    alert('Admin logged in.');
+    localStorage.setItem('currentUser', 'admin');
+    window.location.href = 'login.html'; // Redirect to login.html for admin
+  } else if (user && user.password === password) {
+    alert('Login successful!');
+    localStorage.setItem('currentUser', username);
+    window.location.href = 'login.html'; // Redirect to login.html for normal users
+  } else {
+    alert('Invalid credentials.');
+  }
+}
+
+    function signUp() {
+      const username = document.getElementById('signupUsername').value;
+      const password = document.getElementById('signupPassword').value;
+      const confirmPassword = document.getElementById('signupConfirmPassword').value;
+      const secretCode = document.getElementById('signupSecretCode').value;
+
+      if (password !== confirmPassword) {
+        alert('Passwords do not match!');
+        return;
       }
 
-      // Check if user exists in localStorage
-      var user = JSON.parse(localStorage.getItem(username));
+      const user = { username, password, secretCode };
+      localStorage.setItem(username, JSON.stringify(user));
+      alert('Account created successfully!');
+      showLoginPage();
+    }
 
-      if (user && user.password === password) {
-        localStorage.setItem("role", "user");
-        window.location.href = "login.html"; // Redirect to login page after successful user login
+    function resetPassword() {
+      const username = document.getElementById('forgotUsername').value;
+      const secretCode = document.getElementById('forgotSecretCode').value;
+      const newPassword = document.getElementById('newPassword').value;
+      const confirmNewPassword = document.getElementById('confirmNewPassword').value;
+
+      const user = JSON.parse(localStorage.getItem(username));
+      if (user && user.secretCode === secretCode) {
+        if (newPassword === confirmNewPassword) {
+          user.password = newPassword;
+          localStorage.setItem(username, JSON.stringify(user));
+          alert('Password reset successfully!');
+          showLoginPage();
+        } else {
+          alert('Passwords do not match!');
+        }
       } else {
-        showMessage("Invalid username or password.");
+        alert('Invalid username or secret code.');
       }
     }
-
-    // Function to display a message
-    function showMessage(message) {
-      document.getElementById('msgText').innerText = message;
-      document.getElementById('msgModal').style.display = 'flex';
-    }
-
-    // Password Strength Indicator (for sign up)
-    function updatePasswordStrength(password) {
-      var strength = 0;
-      if (password.length >= 8) strength += 1;
-      if (password.match(/[a-z]/)) strength += 1;
-      if (password.match(/[A-Z]/)) strength += 1;
-      if (password.match(/[0-9]/)) strength += 1;
-      if (password.match(/[\W_]/)) strength += 1;
-
-      var strengthBar = document.getElementById('passwordStrengthIndicator');
-      var strengthLevel = "";
-
-      if (strength === 1) {
-        strengthLevel = "Weak";
-        strengthBar.innerHTML = `<div style="width: 20%; background-color: red;"></div>`;
-      } else if (strength === 2) {
-        strengthLevel = "Medium";
-        strengthBar.innerHTML = `<div style="width: 40%; background-color: orange;"></div>`;
-      } else if (strength === 3) {
-        strengthLevel = "Strong";
-        strengthBar.innerHTML = `<div style="width: 60%; background-color: yellow;"></div>`;
-      } else if (strength === 4) {
-        strengthLevel = "Very Strong";
-        strengthBar.innerHTML = `<div style="width: 80%; background-color: lightgreen;"></div>`;
-      } else if (strength === 5) {
-        strengthLevel = "Excellent";
-        strengthBar.innerHTML = `<div style="width: 100%; background-color: green;"></div>`;
-      } else {
-        strengthLevel = "Very Weak";
-        strengthBar.innerHTML = `<div style="width: 0%; background-color: red;"></div>`;
-      }
-
-      return strengthLevel;
-    }
-
-    // Call the password strength function when typing password (for signup)
-    document.getElementById('password').addEventListener('input', function() {
-      updatePasswordStrength(this.value);
-    });
-
   </script>
-
 </body>
 </html>
