@@ -1,64 +1,138 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Firebase Email Verification & OTP</title>
-  <script type="module">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email OTP Verification</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            padding: 20px;
+        }
+
+        .otp-container {
+            max-width: 400px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            text-align: center;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .button {
+            width: 100%;
+            padding: 12px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .button:hover {
+            background-color: #45a049;
+        }
+
+        .status {
+            text-align: center;
+            margin-top: 20px;
+            color: green;
+        }
+    </style>
+</head>
+<body>
+
+<div class="otp-container">
+    <h2>Email OTP Verification</h2>
+
+    <input type="email" id="email" class="input-field" placeholder="Enter your email" required>
+    <button class="button" onclick="sendOTP()">Send OTP</button>
+
+    <div id="otpSection" style="display: none;">
+        <input type="text" id="otp" class="input-field" placeholder="Enter OTP" required>
+        <button class="button" onclick="verifyOTP()">Verify OTP</button>
+    </div>
+
+    <div id="status" class="status"></div>
+</div>
+
+<script type="module">
+    // Import necessary Firebase functions
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
-    import { getAuth, createUserWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
+    import { getAuth, sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink, ActionCodeSettings } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
 
+    // Firebase configuration
     const firebaseConfig = {
-    apiKey: "AIzaSyAXZgxM6PU-T3D2811KnBszblRWju7rv1Y",
-    authDomain: "dws-management.firebaseapp.com",
-    projectId: "dws-management",
-    storageBucket: "dws-management.firebasestorage.app",
-    messagingSenderId: "23827231923",
-    appId: "1:23827231923:web:97141b6d19c7cd109d2cc6",
-    measurementId: "G-L14GLJDYW7"
-  };
+        apiKey: "AIzaSyAXZgxM6PU-T3D2811KnBszblRWju7rv1Y",
+        authDomain: "dws-management.firebaseapp.com",
+        projectId: "dws-management",
+        storageBucket: "dws-management.appspot.com",
+        messagingSenderId: "23827231923",
+        appId: "1:23827231923:web:97141b6d19c7cd109d2cc6",
+        measurementId: "G-L14GLJDYW7"
+    };
 
+    // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
 
-    // Function to sign up the user and send verification email
-    async function signUp() {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
+    // Function to send OTP via email
+    function sendOTP() {
+        const email = document.getElementById("email").value;
+        const actionCodeSettings = {
+            // URL you want to redirect back to. The domain (www.example.com) for this
+            // from Firebase console will be dynamically replaced.
+            url: window.location.href, 
+            handleCodeInApp: true
+        };
 
-      try {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
-        await sendEmailVerification(user);
-        alert("Sign-up successful! Please check your email for verification.");
-      } catch (error) {
-        alert("Error: " + error.message);
-      }
+        sendSignInLinkToEmail(auth, email, actionCodeSettings)
+            .then(() => {
+                // Save the email locally to complete sign-in
+                window.localStorage.setItem('emailForSignIn', email);
+                document.getElementById("otpSection").style.display = "block";
+                document.getElementById("status").textContent = "OTP sent to your email! Please check your inbox.";
+            })
+            .catch((error) => {
+                const errorCode = error.code;
+                const errorMessage = error.message;
+                document.getElementById("status").textContent = `Error: ${errorMessage}`;
+            });
     }
 
-    // Function to send password reset email (OTP)
-    async function sendResetEmail() {
-      const email = document.getElementById("email").value;
-
-      try {
-        await sendPasswordResetEmail(auth, email);
-        alert("Password reset email sent! Please check your inbox.");
-      } catch (error) {
-        alert("Error: " + error.message);
-      }
+    // Function to verify OTP
+    function verifyOTP() {
+        const email = window.localStorage.getItem('emailForSignIn');
+        const otp = document.getElementById("otp").value;
+        
+        if (isSignInWithEmailLink(auth, otp)) {
+            signInWithEmailLink(auth, email, otp)
+                .then(() => {
+                    document.getElementById("status").textContent = "Email verified successfully!";
+                })
+                .catch((error) => {
+                    const errorCode = error.code;
+                    const errorMessage = error.message;
+                    document.getElementById("status").textContent = `Error: ${errorMessage}`;
+                });
+        } else {
+            document.getElementById("status").textContent = "Invalid OTP.";
+        }
     }
-  </script>
-</head>
-<body>
-  <h2>Firebase Email Verification & OTP</h2>
-  
-  <h3>Sign Up</h3>
-  <input type="email" id="email" placeholder="Enter email" required>
-  <input type="password" id="password" placeholder="Enter password" required>
-  <button onclick="signUp()">Sign Up</button>
+</script>
 
-  <h3>Password Reset (OTP)</h3>
-  <input type="email" id="email" placeholder="Enter email for reset" required>
-  <button onclick="sendResetEmail()">Send OTP for Reset</button>
 </body>
 </html>
