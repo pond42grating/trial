@@ -76,11 +76,7 @@
       text-decoration: underline;
     }
 
-    .password-strength-indicator {
-      height: 20px;
-      margin-bottom: 10px;
-    }
-
+    /* Password strength bar */
     .strength-bar {
       height: 5px;
       margin-top: 10px;
@@ -94,145 +90,85 @@
       display: block;
       height: 100%;
     }
+
+    /* Limit height of password strength indicator to prevent overlap */
+    .password-strength-indicator {
+      margin-bottom: 20px;
+      height: 20px; /* Adjust height to prevent overlap */
+    }
+
   </style>
 </head>
 <body>
+
   <!-- Login Container -->
-  <div class="login-container" id="loginPage">
+  <div class="login-container">
     <h2>Login</h2>
-    <input type="text" id="username" class="input-field" placeholder="Username">
-    <input type="password" id="password" class="input-field" placeholder="Password">
+    
+    <!-- Username Input -->
+    <input type="text" id="username" class="input-field" placeholder="Username" required>
+    
+    <!-- Password Input -->
+    <input type="password" id="password" class="input-field" placeholder="Password" required>
+    
+    <!-- Sign In Button -->
     <button class="button" onclick="login()">Sign In</button>
+    
+    <!-- Sign Up Link -->
     <div class="sign-up-link">
-      <p>Don't have an account? <a href="#" onclick="showSignUpPage()">Sign Up</a></p>
+      <p>Don't have an account? <a href="signup.html">Sign Up</a></p>
     </div>
+    
+    <!-- Forgot Password Link -->
     <div class="forgot-password">
-      <p><a href="#" onclick="showForgotPasswordPage()">Forgot Password?</a></p>
+      <p><a href="forget.html">Forgot Password?</a></p>
     </div>
   </div>
 
-  <!-- Sign Up Page -->
-  <div class="login-container" id="signUpPage" style="display:none;">
-    <h2>Sign Up</h2>
-    <input type="text" id="signupUsername" class="input-field" placeholder="Username">
-    <input type="password" id="signupPassword" class="input-field" placeholder="Password">
-    <input type="password" id="signupConfirmPassword" class="input-field" placeholder="Confirm Password">
-    <input type="text" id="signupSecretCode" class="input-field" placeholder="Secret Code">
-    <div id="passwordStrengthIndicator"></div>
-    <button class="button" onclick="signUp()">Create Account</button>
-    <button class="button" onclick="showLoginPage()">Back</button>
-  </div>
-
-  <!-- Forget Password Page -->
-  <div class="login-container" id="forgotPasswordPage" style="display:none;">
-    <h2>Forgot Password</h2>
-    <input type="text" id="forgotUsername" class="input-field" placeholder="Username">
-    <input type="text" id="forgotSecretCode" class="input-field" placeholder="Secret Code">
-    <input type="password" id="newPassword" class="input-field" placeholder="New Password">
-    <input type="password" id="confirmNewPassword" class="input-field" placeholder="Confirm New Password">
-    <button class="button" onclick="resetPassword()">Reset Password</button>
-    <button class="button" onclick="showLoginPage()">Back</button>
+  <!-- Modal for displaying messages -->
+  <div id="msgModal" style="display: none;">
+    <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); display: flex; justify-content: center; align-items: center; z-index: 1000;">
+      <div style="background-color: white; padding: 20px; border-radius: 8px; text-align: center; width: 300px;">
+        <h4 id="msgText">Message</h4>
+        <button onclick="closeModal()">Close</button>
+      </div>
+    </div>
   </div>
 
   <script>
-    function showLoginPage() {
-      document.getElementById('loginPage').style.display = 'block';
-      document.getElementById('signUpPage').style.display = 'none';
-      document.getElementById('forgotPasswordPage').style.display = 'none';
+    // Function to show the message box
+    function showMsg(message) {
+      document.getElementById('msgText').innerText = message;
+      document.getElementById('msgModal').style.display = 'flex';
     }
 
-    function showSignUpPage() {
-      document.getElementById('loginPage').style.display = 'none';
-      document.getElementById('signUpPage').style.display = 'block';
-      document.getElementById('forgotPasswordPage').style.display = 'none';
+    // Function to close the modal
+    function closeModal() {
+      document.getElementById('msgModal').style.display = 'none';
     }
 
-    function showForgotPasswordPage() {
-      document.getElementById('loginPage').style.display = 'none';
-      document.getElementById('signUpPage').style.display = 'none';
-      document.getElementById('forgotPasswordPage').style.display = 'block';
-    }
-
+    // Handle user login
     function login() {
-  const username = document.getElementById('username').value;
-  const password = document.getElementById('password').value;
-  const user = JSON.parse(localStorage.getItem(username));
+      var username = document.getElementById("username").value;
+      var password = document.getElementById("password").value;
 
-  if (username === 'admin' && password === 'admin123') {
-    localStorage.setItem('currentUser', 'admin');
-    alert('Admin logged in.');
-    window.location.href = 'admin.html'; // Redirect to admin panel
-  } else if (user && user.password === password) {
-    if (user.role === 'pending') {
-      alert('Your account is pending admin approval.');
-    } else {
-      localStorage.setItem('currentUser', username);
-      alert('Login successful!');
-      window.location.href = 'login.html'; // Redirect to user home page
-    }
-  } else {
-    alert('Invalid credentials.');
-  }
-}
+      // Check if user exists in localStorage
+      var user = JSON.parse(localStorage.getItem(username));
 
-
-  // Handle Sign-Up
-  function signUp() {
-      var username = document.getElementById('username').value;
-      var password = document.getElementById('password').value;
-      var secretCode = document.getElementById('secretCode').value;
-
-      if (!username || !password || !secretCode) {
-        alert("All fields are required!");
-        return;
-      }
-
-      // Check if the username already exists
-      if (localStorage.getItem(username)) {
-        alert("Username already exists!");
-        return;
-      }
-
-      // Create user object
-      var user = {
-        username: username,
-        password: password,
-        secretCode: secretCode,
-        approved: false, // User is pending approval
-      };
-
-      // Add the user to pending approvals
-      var pendingApprovals = JSON.parse(localStorage.getItem("pendingApprovals")) || [];
-      pendingApprovals.push(user);
-      localStorage.setItem("pendingApprovals", JSON.stringify(pendingApprovals));
-
-      alert("Sign up successful! Your account is pending admin approval.");
-      window.location.href = "index.html"; // Redirect to login page after sign-up
-    }
-
-    function showLogin() {
-      window.location.href = "index.html";
-      }
-    function resetPassword() {
-      const username = document.getElementById('forgotUsername').value;
-      const secretCode = document.getElementById('forgotSecretCode').value;
-      const newPassword = document.getElementById('newPassword').value;
-      const confirmNewPassword = document.getElementById('confirmNewPassword').value;
-
-      const user = JSON.parse(localStorage.getItem(username));
-      if (user && user.secretCode === secretCode) {
-        if (newPassword === confirmNewPassword) {
-          user.password = newPassword;
-          localStorage.setItem(username, JSON.stringify(user));
-          alert('Password reset successfully!');
-          showLoginPage();
-        } else {
-          alert('Passwords do not match!');
-        }
+      if (user && user.password === password) {
+        localStorage.setItem("role", "user");
+        window.location.href = "login.html"; // Redirect to login page after successful user login
       } else {
-        alert('Invalid username or secret code.');
+        showMessage("Invalid username or password.");
       }
+    }
+
+    // Function to display a message
+    function showMessage(message) {
+      document.getElementById('msgText').innerText = message;
+      document.getElementById('msgModal').style.display = 'flex';
     }
   </script>
+
 </body>
 </html>
