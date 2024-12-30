@@ -1,105 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DWS Management - Login</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f9fafb;
-            margin: 0;
-            padding: 0;
-        }
+// Import Firebase modules
+import { getFirestore, doc, setDoc } from "firebase/firestore"; 
+import { initializeApp } from "firebase/app";
 
-        header {
-            background-color: #333;
-            color: white;
-            padding: 15px 20px;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 1000;
-        }
-
-        header h1 {
-            margin: 0;
-        }
-
-        .logout-btn {
-            background-color: #f44336;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            cursor: pointer;
-        }
-
-        .main-content {
-            margin-top: 80px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: calc(100vh - 80px);
-            gap: 20px;
-        }
-
-        .button {
-            background-color: #2196F3;
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            font-size: 18px;
-            cursor: pointer;
-            border-radius: 8px;
-            width: 250px;
-            text-align: center;
-        }
-
-        .button:hover {
-            background-color: #1976D2;
-        }
-
-        .help-btn {
-            background-color: #9C27B0;
-            color: white;
-            padding: 12px 24px;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-
-        .help-btn:hover {
-            background-color: #8E24AA;
-        }
-    </style>
-</head>
-<body>
-    <header>
-        <h1>DWS Management</h1>
-        <div>
-            <button class="logout-btn" onclick="logout()">Logout</button>
-        </div>
-    </header>
-
-    <div class="main-content">
-        <h2 id="welcomeMessage">Welcome, User!</h2>
-        <button class="button" onclick="window.location.href = 'createDWS.html'">Create DWS</button>
-        <button class="button" onclick="window.location.href = 'manageDWS.html'">Manage DWS</button>
-        <button class="help-btn" onclick="window.location.href = 'help.html'">Help</button>
-    </div>
-
-    <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js"></script>
-
-    <script>
-        // Firebase configuration
-        const firebaseConfig = {
+// Firebase configuration
+const firebaseConfig = {
     apiKey: "AIzaSyAXZgxM6PU-T3D2811KnBszblRWju7rv1Y",
     authDomain: "dws-management.firebaseapp.com",
     projectId: "dws-management",
@@ -109,48 +13,42 @@
     measurementId: "G-6VZVVDS3S0"
   };
 
-        // Initialize Firebase
-        const app = firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore(app);
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-        // Handle logout
-        function logout() {
-            auth.signOut().then(() => {
-                window.location.href = 'index.html';  // Redirect to the login page
-            }).catch((error) => {
-                console.error("Error logging out: ", error);
-            });
-        }
+// Function to send data to Firebase Firestore
+async function sendDataToFirebase() {
+  try {
+    // Data to save
+    const dwsData = {
+      dwsNo: 1,
+      date: "2024-12-30",
+      structureName: "Building A",
+      siNo: "12345",
+      workDescription: "Electrical Wiring",
+      location: "Section 1",
+      manpower: [
+        { badgeNo: "001", name: "John Doe", jobTitle: "Electrician", workingHours: 8 },
+        { badgeNo: "002", name: "Jane Smith", jobTitle: "Technician", workingHours: 7 },
+      ],
+      equipment: [
+        { equipmentName: "Drill", workingHours: 5 },
+        { equipmentName: "Saw", workingHours: 4 },
+      ],
+      materials: [
+        { materialName: "Wire", quantity: 100 },
+        { materialName: "Nails", quantity: 50 },
+      ],
+    };
 
-        // Retrieve user data from Firestore
-        function getUserData() {
-            const user = auth.currentUser;
+    // Save data to Firestore
+    await setDoc(doc(db, "dwsSchedules", `${dwsData.dwsNo}`), dwsData);
+    console.log("Data successfully saved to Firebase");
+  } catch (error) {
+    console.error("Error saving data to Firebase: ", error);
+  }
+}
 
-            if (user) {
-                // Fetch the user data from Firestore using the user's UID (email or other unique identifier)
-                db.collection("users").where("email", "==", user.email).get()
-                    .then((querySnapshot) => {
-                        if (querySnapshot.empty) {
-                            console.log("No user found!");
-                        } else {
-                            querySnapshot.forEach((doc) => {
-                                const userData = doc.data();
-                                document.getElementById("welcomeMessage").innerText = `Welcome, ${userData.username}!`;
-                            });
-                        }
-                    })
-                    .catch((error) => {
-                        console.error("Error getting documents: ", error);
-                    });
-            } else {
-                console.log("No user is signed in.");
-                window.location.href = 'index.html'; // Redirect to login if no user is logged in
-            }
-        }
-
-        // Call the function to get user data
-        getUserData();
-    </script>
-</body>
-</html>
+// Call the function to send data
+sendDataToFirebase();
