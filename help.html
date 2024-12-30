@@ -80,10 +80,15 @@
     }
 
     .icon {
-      width: 20px;
-      height: 20px;
+      width: 16px;
+      height: 16px;
       vertical-align: middle;
       margin-right: 8px;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 20px;
     }
   </style>
 </head>
@@ -91,18 +96,22 @@
 
   <div class="container">
     <h1>DWS Management</h1>
-    <input type="email" id="email" class="input-field" placeholder="Enter your email">
-    <input type="password" id="password" class="input-field" placeholder="Enter your password">
+    <input type="email" id="email" class="input-field" placeholder="Enter your email" required>
+    <input type="password" id="password" class="input-field" placeholder="Enter your password" required>
     
     <button class="button" onclick="login()">Login</button>
 
     <div class="link-btn">
       <button class="small-button" onclick="window.location.href = 'signup.html'">
-        <img src="signup-icon.png" class="icon" alt="Sign Up"> Sign Up
+        <span class="icon">🔑</span> Sign Up
       </button>
       <button class="small-button" onclick="window.location.href = 'forget.html'">
-        <img src="forget-icon.png" class="icon" alt="Forgot Password"> Forgot Password
+        <span class="icon">❓</span> Forgot Password
       </button>
+    </div>
+
+    <div class="footer">
+      <p>&copy; 2024 DWS Management</p>
     </div>
   </div>
 
@@ -120,13 +129,48 @@
       // Firebase login logic here, use Firebase Authentication
       firebase.auth().signInWithEmailAndPassword(email, password)
         .then((userCredential) => {
-          alert("Login successful!");
-          window.location.href = "dashboard.html"; // Redirect to your dashboard page
+          // Check if the user is admin by checking the email
+          const user = userCredential.user;
+          checkAdminStatus(user);
         })
         .catch((error) => {
           alert("Error: " + error.message);
         });
     }
+
+    // Check if the logged-in user is an admin
+    function checkAdminStatus(user) {
+      const userEmail = user.email;
+
+      // You can set the admin email as you prefer, here we're checking against a stored admin email.
+      const adminEmail = "admin@dwsmanagement.com"; // Change this to your admin's email
+
+      if (userEmail === adminEmail) {
+        // If admin, redirect to admin page
+        window.location.href = "admin.html";
+      } else {
+        // If normal user, redirect to normal user page
+        window.location.href = "login.html";
+      }
+    }
+  </script>
+
+  <!-- Firebase Initialization -->
+  <script src="https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAXZgxM6PU-T3D2811KnBszblRWju7rv1Y",
+      authDomain: "dws-management.firebaseapp.com",
+      projectId: "dws-management",
+      storageBucket: "dws-management.firebasestorage.app",
+      messagingSenderId: "23827231923",
+      appId: "1:23827231923:web:97141b6d19c7cd109d2cc6",
+      measurementId: "G-L14GLJDYW7"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
   </script>
 </body>
 </html>
