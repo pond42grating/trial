@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Firebase Data Viewer</title>
+    <title>Firebase User Data</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js"></script>
 </head>
 <body>
-    <h1>Firebase Data</h1>
+    <h1>Firebase User Data</h1>
     <div id="data-container">
         <p>Loading data...</p>
     </div>
@@ -29,19 +29,24 @@
         const app = firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore(app);
 
-        // Function to fetch and display data from Firestore
-        function fetchDataFromFirebase() {
-            const collectionRef = db.collection("User"); // Replace with your collection name
+        // Function to fetch and display user data from Firestore
+        function fetchUserData() {
+            const userRef = db.collection("users"); // Collection name is "users"
 
-            collectionRef.get().then((querySnapshot) => {
+            userRef.get().then((querySnapshot) => {
                 if (querySnapshot.empty) {
-                    document.getElementById("data-container").innerHTML = "<p>No data found.</p>";
+                    document.getElementById("data-container").innerHTML = "<p>No users found.</p>";
                     return;
                 }
 
                 let dataHTML = "<ul>";
                 querySnapshot.forEach((doc) => {
-                    dataHTML += `<li>${JSON.stringify(doc.data())}</li>`; // Display document data
+                    const userData = doc.data();
+                    if (userData.Main) {
+                        dataHTML += `<li>User ID: ${doc.id}, Main Field: ${JSON.stringify(userData.Main)}</li>`;
+                    } else {
+                        dataHTML += `<li>User ID: ${doc.id}, Main Field: Not found</li>`;
+                    }
                 });
                 dataHTML += "</ul>";
                 document.getElementById("data-container").innerHTML = dataHTML;
@@ -51,7 +56,7 @@
         }
 
         // Call the function to fetch data when the page loads
-        fetchDataFromFirebase();
+        fetchUserData();
     </script>
 </body>
 </html>
