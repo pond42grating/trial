@@ -3,99 +3,56 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Firestore Data Check</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f9fafb;
-      padding: 20px;
-      text-align: center;
+  <title>Firestore Test</title>
+  <script type="module">
+    // Import Firebase
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+    import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyAXZgxM6PU-T3D2811KnBszblRWju7rv1Y",
+      authDomain: "dws-management.firebaseapp.com",
+      projectId: "dws-management",
+      storageBucket: "dws-management.firebasestorage.app",
+      messagingSenderId: "23827231923",
+      appId: "1:23827231923:web:0128462cbe55dfdc9d2cc6",
+      measurementId: "G-6VZVVDS3S0"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // Function to add data to Firestore
+    async function addData() {
+      const docRef = doc(db, "User", "User"); // Parent path: /User, Document ID: User
+      await setDoc(docRef, {
+        Main: "This is a test message!" // Your field and value
+      });
+      alert("Data added successfully!");
     }
 
-    .container {
-      max-width: 600px;
-      margin: 0 auto;
-      background-color: white;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    }
-
-    button {
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 16px;
-    }
-
-    button:hover {
-      background-color: #45a049;
-    }
-
-    .result {
-      margin-top: 20px;
-      padding: 10px;
-      background-color: #f4f4f4;
-      border-radius: 5px;
-      overflow-x: auto;
-      text-align: left;
-    }
-  </style>
-</head>
-<body>
-
-<div class="container">
-  <h2>Check Data at /User/User/Main</h2>
-  <button onclick="checkData()">Check Data</button>
-  <div class="result" id="result">No data retrieved yet.</div>
-</div>
-
-<script type="module">
-  // Import Firebase modules
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
-  import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
-
-  // Firebase configuration
-  const firebaseConfig = {
-    apiKey: "AIzaSyAXZgxM6PU-T3D2811KnBszblRWju7rv1Y",
-    authDomain: "dws-management.firebaseapp.com",
-    projectId: "dws-management",
-    storageBucket: "dws-management.appspot.com",
-    messagingSenderId: "23827231923",
-    appId: "1:23827231923:web:97141b6d19c7cd109d2cc6",
-    measurementId: "G-L14GLJDYW7"
-  };
-
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-
-  // Function to check data
-  async function checkData() {
-    const resultDiv = document.getElementById("result");
-
-    try {
-      // Retrieve the document at /User/User
-      const docRef = doc(db, "User", "User");
+    // Function to retrieve data from Firestore
+    async function getData() {
+      const docRef = doc(db, "User", "User"); // Parent path: /User, Document ID: User
       const docSnap = await getDoc(docRef);
 
       if (docSnap.exists()) {
-        const data = docSnap.data().Main; // Retrieve the "Main" field
-        resultDiv.innerText = data
-          ? `Data found: ${JSON.stringify(data, null, 2)}`
-          : "Main field is empty.";
+        alert("Data retrieved: " + docSnap.data().Main);
       } else {
-        resultDiv.innerText = "No document found at /User/User.";
+        alert("No such document!");
       }
-    } catch (error) {
-      console.error("Error retrieving data:", error);
-      resultDiv.innerText = "Error retrieving data. Check console for details.";
     }
-  }
-</script>
 
+    // Export functions to global scope for HTML buttons
+    window.addData = addData;
+    window.getData = getData;
+  </script>
+</head>
+<body>
+  <h1>Firestore Test</h1>
+  <button onclick="addData()">Add Data</button>
+  <button onclick="getData()">Get Data</button>
 </body>
 </html>
