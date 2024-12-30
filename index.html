@@ -3,11 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Firestore Test</title>
+  <title>Firestore & Authentication Test</title>
   <script type="module">
-    // Import Firebase
+    // Import Firebase and Firebase Authentication
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
     import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
 
     // Firebase configuration
     const firebaseConfig = {
@@ -23,19 +24,20 @@
     // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+    const auth = getAuth(app);
 
     // Function to add data to Firestore
     async function addData() {
-      const docRef = doc(db, "User", "User"); // Parent path: /User, Document ID: User
+      const docRef = doc(db, "User", "User");
       await setDoc(docRef, {
-        Main: "This is a test message!" // Your field and value
+        Main: "This is a test message!" // Example field
       });
       alert("Data added successfully!");
     }
 
     // Function to retrieve data from Firestore
     async function getData() {
-      const docRef = doc(db, "User", "User"); // Parent path: /User, Document ID: User
+      const docRef = doc(db, "User", "User");
       const docSnap = await getDoc(docRef);
 
       if (docSnap.exists()) {
@@ -45,13 +47,68 @@
       }
     }
 
-    // Export functions to global scope for HTML buttons
+    // Sign Up Function
+    async function signUp() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        alert("Sign-up successful! Welcome " + userCredential.user.email);
+      } catch (error) {
+        alert("Error: " + error.message);
+      }
+    }
+
+    // Sign In Function
+    async function signIn() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        alert("Sign-in successful! Welcome " + userCredential.user.email);
+      } catch (error) {
+        alert("Error: " + error.message);
+      }
+    }
+
+    // Sign Out Function
+    async function signOutUser() {
+      try {
+        await signOut(auth);
+        alert("You have been signed out.");
+      } catch (error) {
+        alert("Error signing out: " + error.message);
+      }
+    }
+
+    // Export functions to global scope
     window.addData = addData;
     window.getData = getData;
+    window.signUp = signUp;
+    window.signIn = signIn;
+    window.signOutUser = signOutUser;
   </script>
 </head>
 <body>
-  <h1>Firestore Test</h1>
+  <h1>Firestore & Authentication Test</h1>
+  
+  <h3>Sign Up</h3>
+  <input type="email" id="email" placeholder="Enter email">
+  <input type="password" id="password" placeholder="Enter password">
+  <button onclick="signUp()">Sign Up</button>
+
+  <h3>Sign In</h3>
+  <input type="email" id="email" placeholder="Enter email">
+  <input type="password" id="password" placeholder="Enter password">
+  <button onclick="signIn()">Sign In</button>
+
+  <h3>Sign Out</h3>
+  <button onclick="signOutUser()">Sign Out</button>
+
+  <br><br>
+
   <button onclick="addData()">Add Data</button>
   <button onclick="getData()">Get Data</button>
 </body>
