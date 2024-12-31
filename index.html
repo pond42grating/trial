@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Firebase CRUD Operations</title>
+  <title>Save Admin Data</title>
   <script type="module">
     // Import Firebase modules
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
-    import { getFirestore, doc, setDoc, getDoc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+    import { getFirestore, setDoc, doc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
 
     // Your Firebase configuration
     const firebaseConfig = {
@@ -24,75 +24,29 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // Add data to Firestore
-    async function addData() {
-      const docRef = doc(db, "testCollection", "testDoc");
-      const data = {
-        name: document.getElementById("name").value,
-        email: document.getElementById("email").value,
-        timestamp: new Date()
-      };
+    // Save Admin Data to Firebase
+    async function saveAdminData() {
+      try {
+        const adminData = {
+          username: "admin",
+          password: "admin123"
+        };
 
-      await setDoc(docRef, data);
-      alert("Data added successfully!");
-    }
-
-    // Retrieve data from Firestore
-    async function getData() {
-      const docRef = doc(db, "testCollection", "testDoc");
-      const docSnap = await getDoc(docRef);
-
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        document.getElementById("output").textContent = JSON.stringify(data, null, 2);
-      } else {
-        alert("No such document!");
+        // Save admin data in "users" collection with "admin" document ID
+        await setDoc(doc(db, "users", "admin"), adminData);
+        alert("Admin data saved successfully!");
+      } catch (error) {
+        console.error("Error saving admin data:", error);
+        alert("Failed to save admin data.");
       }
     }
 
-    // Update data in Firestore
-    async function updateData() {
-      const docRef = doc(db, "testCollection", "testDoc");
-      const updatedData = {
-        name: document.getElementById("name").value || "Updated Name",
-        email: document.getElementById("email").value || "updated.email@example.com"
-      };
-
-      await updateDoc(docRef, updatedData);
-      alert("Data updated successfully!");
-    }
-
-    // Delete data from Firestore
-    async function deleteData() {
-      const docRef = doc(db, "testCollection", "testDoc");
-      await deleteDoc(docRef);
-      alert("Document deleted successfully!");
-    }
-
-    // Expose functions to global scope
-    window.addData = addData;
-    window.getData = getData;
-    window.updateData = updateData;
-    window.deleteData = deleteData;
+    // Trigger saveAdminData when the button is clicked
+    window.saveAdminData = saveAdminData;
   </script>
 </head>
 <body>
-  <h1>Firebase CRUD Test</h1>
-  <div>
-    <label for="name">Name:</label>
-    <input type="text" id="name" placeholder="Enter name" />
-  </div>
-  <div>
-    <label for="email">Email:</label>
-    <input type="email" id="email" placeholder="Enter email" />
-  </div>
-  <div>
-    <button onclick="addData()">Add Data</button>
-    <button onclick="getData()">Get Data</button>
-    <button onclick="updateData()">Update Data</button>
-    <button onclick="deleteData()">Delete Data</button>
-  </div>
-  <h3>Output:</h3>
-  <pre id="output"></pre>
+  <h1>Save Admin Data to Firebase</h1>
+  <button onclick="saveAdminData()">Save Admin Data</button>
 </body>
 </html>
