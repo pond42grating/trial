@@ -86,6 +86,13 @@
         .link:hover {
             text-decoration: underline;
         }
+
+        #adminDetails {
+            margin-top: 20px;
+            font-size: 14px;
+            text-align: center;
+            color: #555;
+        }
     </style>
 </head>
 <body>
@@ -101,6 +108,8 @@
         <button class="button" onclick="login()">Login</button>
         <p class="link"><a href="signup.html">Sign Up</a></p>
         <p class="link"><a href="forget.html">Forgot Password?</a></p>
+        <button class="button" onclick="getAdminDetails()">Get Admin Details</button>
+        <div id="adminDetails"></div> <!-- Placeholder for admin details -->
     </div>
 
     <script type="module">
@@ -157,13 +166,33 @@
                     if (email === adminData.email && password === adminData.password) {
                         window.location.href = "admin.html"; // Redirect to admin page
                     } else {
-                        window.location.href = "dashboard.html"; // Redirect to regular user dashboard
+                        window.location.href = "createDWS.html"; // Redirect to regular user dashboard
                     }
                 } else {
                     alert("Admin data not found.");
                 }
             } catch (error) {
                 alert("Error: " + error.message);
+            }
+        }
+
+        // Fetch and display admin details
+        async function getAdminDetails() {
+            const adminDetailsDiv = document.getElementById("adminDetails");
+            adminDetailsDiv.textContent = "Fetching admin details...";
+
+            try {
+                const adminRef = doc(db, "admin", "adminCredentials");
+                const adminDoc = await getDoc(adminRef);
+
+                if (adminDoc.exists()) {
+                    const adminData = adminDoc.data();
+                    adminDetailsDiv.textContent = `Admin Email: ${adminData.email}, Admin Password: ${adminData.password}`;
+                } else {
+                    adminDetailsDiv.textContent = "Admin data not found.";
+                }
+            } catch (error) {
+                adminDetailsDiv.textContent = "Error fetching admin details.";
             }
         }
     </script>
