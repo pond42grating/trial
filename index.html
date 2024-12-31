@@ -3,12 +3,151 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login - DWS Management</title>
+  <title>Admin Dashboard - DWS Management</title>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background-color: #4CAF50;
+      color: white;
+      padding: 15px;
+      text-align: center;
+    }
+
+    .container {
+      padding: 20px;
+    }
+
+    .dashboard {
+      display: flex;
+      justify-content: space-around;
+      margin-bottom: 20px;
+    }
+
+    .card {
+      background-color: white;
+      border-radius: 5px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      width: 200px;
+      text-align: center;
+    }
+
+    .card h3 {
+      margin: 0;
+      font-size: 24px;
+    }
+
+    .card p {
+      font-size: 18px;
+      color: #666;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      display: block;
+      margin: 10px 0;
+    }
+
+    .btn:hover {
+      background-color: #45a049;
+    }
+
+    .user-list {
+      margin-top: 30px;
+    }
+
+    .user-list table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    .user-list table, th, td {
+      border: 1px solid #ddd;
+    }
+
+    .user-list th, td {
+      padding: 10px;
+      text-align: center;
+    }
+    
+    .user-list th {
+      background-color: #4CAF50;
+      color: white;
+    }
+
+    .logout-btn {
+      background-color: #f44336;
+      color: white;
+    }
+
+    .logout-btn:hover {
+      background-color: #e53935;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Admin Dashboard - DWS Management</h1>
+  </header>
+
+  <div class="container">
+    <div class="dashboard">
+      <div class="card">
+        <h3>Active Users</h3>
+        <p>45</p>
+      </div>
+      <div class="card">
+        <h3>DWS Created</h3>
+        <p>123</p>
+      </div>
+      <div class="card">
+        <h3>Upcoming Tasks</h3>
+        <p>5</p>
+      </div>
+    </div>
+
+    <button class="btn" id="manage-users-btn">Manage Users</button>
+    <button class="btn" id="manage-dws-btn">Manage DWS</button>
+
+    <!-- User Management Section -->
+    <div class="user-list">
+      <h2>Registered Users</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="user-table-body">
+          <!-- Dynamically generated rows will go here -->
+        </tbody>
+      </table>
+    </div>
+
+    <button class="btn logout-btn" id="logout-btn">Logout</button>
+  </div>
+
   <script type="module">
-    // Import Firebase
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+    import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-auth.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-app.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-firestore.js";
 
     // Firebase configuration
     const firebaseConfig = {
@@ -23,172 +162,45 @@
 
     // Initialize Firebase
     const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
+    const auth = getAuth();
+    const db = getFirestore();
 
-    // Login Function
-    async function login() {
-      const email = document.getElementById("email").value.trim();
-      const password = document.getElementById("password").value.trim();
-
-      if (!email || !password) {
-        alert("Please enter both email and password.");
-        return;
-      }
-
-      try {
-        // Sign in the user with Firebase Authentication
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
-
-        // Fetch admin details from Firestore to check if the user is an admin (if needed)
-        const adminRef = doc(db, "Admin", "Details");
-        const adminDoc = await getDoc(adminRef);
-
-        if (adminDoc.exists()) {
-          const adminData = adminDoc.data();
-          // Check if the user matches admin credentials
-          if (email === adminData.id && password === adminData.password) {
-            window.location.href = "admin.html"; // Redirect to admin page
-          } else {
-            alert("Invalid credentials.");
-          }
+    // Check if the user is logged in and has admin role
+    auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        // If the user is an admin (check the role)
+        // You can store user role in Firestore or Firebase Authentication (Custom Claims)
+        // Example: user.email === "admin@dws.com"
+        if (user.email === "admin@dws.com") {
+          // Fetch users from Firestore and populate the table
+          const usersSnapshot = await getDocs(collection(db, "users"));
+          const userTableBody = document.getElementById("user-table-body");
+          
+          usersSnapshot.forEach((doc) => {
+            const userData = doc.data();
+            const row = document.createElement("tr");
+            row.innerHTML = `
+              <td>${userData.email}</td>
+              <td>${userData.role}</td>
+              <td><button class="btn">View</button></td>
+            `;
+            userTableBody.appendChild(row);
+          });
         } else {
-          alert("Admin data not found.");
+          alert("You are not authorized to access this page.");
+          window.location.href = "index.html"; // Redirect to login if not an admin
         }
-      } catch (error) {
-        console.error("Error during login: ", error);
-        alert("Error: " + error.message);
-      }
-    }
-
-    // Toggle theme (dark/light mode)
-    
-
-    // Export functions to global scope for HTML buttons
-    
-    
-    function toggleTheme() {
-      document.body.classList.toggle('dark-mode');
-      if (document.body.classList.contains('dark-mode')) {
-        localStorage.setItem('theme', 'dark');
       } else {
-        localStorage.setItem('theme', 'light');
+        window.location.href = "index.html"; // Redirect to login page
       }
-    }
+    });
 
-    // Apply the stored theme when the page loads
-    window.onload = function() {
-      const storedTheme = localStorage.getItem('theme');
-      if (storedTheme === 'dark') {
-        document.body.classList.add('dark-mode');
-      } else {
-        document.body.classList.remove('dark-mode');
-      }
-    };
-    
-    window.login = login;
-    window.toggleTheme = toggleTheme;
-    
+    // Logout
+    document.getElementById("logout-btn").addEventListener("click", () => {
+      signOut(auth).then(() => {
+        window.location.href = "index.html"; // Redirect to login page
+      });
+    });
   </script>
-
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      background-color: #f4f4f9;
-      transition: background-color 0.3s ease;
-    }
-
-    .dark-mode {
-      background-color: #333;
-      color: white;
-    }
-
-    .container {
-      max-width: 400px;
-      margin: 50px auto;
-      background: white;
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    .dark-mode .container {
-      background-color: #444;
-    }
-
-    h2 {
-      text-align: center;
-    }
-
-    .input-field {
-      width: 100%;
-      padding: 12px;
-      margin: 10px 0;
-      border-radius: 5px;
-      border: 1px solid #ddd;
-    }
-
-    .button {
-      width: 100%;
-      padding: 12px;
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    .button:hover {
-      background-color: #45a049;
-    }
-
-    .remember-me {
-      display: flex;
-      align-items: center;
-      margin: 10px 0;
-    }
-
-    .remember-me input {
-      margin-right: 5px;
-    }
-
-    .toggle-theme {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      cursor: pointer;
-    }
-
-    .link {
-      display: block;
-      text-align: center;
-      margin-top: 15px;
-      color: #4CAF50;
-      text-decoration: none;
-    }
-
-    .link:hover {
-      text-decoration: underline;
-    }
-  </style>
-</head>
-
-<body>
-  <div class="toggle-theme" onclick="toggleTheme()">🌙</div>
-  <div class="container">
-    <h2>Login to DWS</h2>
-    <input type="email" id="email" class="input-field" placeholder="Email" required>
-    <input type="password" id="password" class="input-field" placeholder="Password" required>
-    <div class="remember-me">
-      <input type="checkbox" id="rememberMe">
-      <label for="rememberMe">Remember Me</label>
-    </div>
-    <button class="button" onclick="login()">Login</button>
-    <p class="link"><a href="signup.html">Sign Up</a></p>
-    <p class="link"><a href="forget.html">Forgot Password?</a></p>
-  </div>
 </body>
 </html>
