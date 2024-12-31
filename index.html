@@ -3,184 +3,126 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Firebase CRUD Operations</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f9;
-        }
-
-        .container {
-            max-width: 500px;
-            margin: 50px auto;
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        h2 {
-            text-align: center;
-        }
-
-        .input-field {
-            width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            border-radius: 5px;
-            border: 1px solid #ddd;
-        }
-
-        .button {
-            width: 100%;
-            padding: 12px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        .button:hover {
-            background-color: #45a049;
-        }
-
-        .action-btns {
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .action-btns button {
-            flex: 1;
-            margin: 0 5px;
-        }
-    </style>
+    <title>Firebase Realtime Database CRUD</title>
 </head>
 <body>
 
-    <div class="container">
-        <h2>Firebase CRUD Operations</h2>
+<h2>Firebase Realtime Database CRUD</h2>
 
-        <!-- Input fields for data -->
-        <input type="text" id="name" class="input-field" placeholder="Enter name" />
-        <input type="email" id="email" class="input-field" placeholder="Enter email" />
-        <input type="text" id="userId" class="input-field" placeholder="Enter User ID (for update & delete)" />
+<!-- Input fields for data -->
+<input type="text" id="userName" placeholder="Enter name" />
+<input type="email" id="userEmail" placeholder="Enter email" />
+<input type="text" id="userId" placeholder="Enter User ID (for update/delete)" />
 
-        <div class="action-btns">
-            <button class="button" onclick="saveData()">Save Data</button>
-            <button class="button" onclick="readData()">Read Data</button>
-            <button class="button" onclick="updateData()">Update Data</button>
-            <button class="button" onclick="deleteData()">Delete Data</button>
-        </div>
+<!-- Buttons for operations -->
+<button onclick="saveData()">Save Data</button>
+<button onclick="readData()">Read Data</button>
+<button onclick="updateData()">Update Data</button>
+<button onclick="deleteData()">Delete Data</button>
 
-        <div id="dataOutput" style="margin-top: 20px;"></div>
-    </div>
+<!-- Display the results -->
+<div id="dataOutput"></div>
 
-    <script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-database.js"></script>
 
-    <script>
-        // Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyAXZgxM6PU-T3D2811KnBszblRWju7rv1Y",
-            authDomain: "dws-management.firebaseapp.com",
-            projectId: "dws-management",
-            storageBucket: "dws-management.firebasestorage.app",
-            messagingSenderId: "23827231923",
-            appId: "1:23827231923:web:97141b6d19c7cd109d2cc6",
-            measurementId: "G-L14GLJDYW7"
-        };
+<script>
+    // Firebase configuration (use your actual Firebase config)
+    const firebaseConfig = {
+        apiKey: "YOUR_API_KEY",
+        authDomain: "YOUR_AUTH_DOMAIN",
+        databaseURL: "YOUR_DATABASE_URL",
+        projectId: "YOUR_PROJECT_ID",
+        storageBucket: "YOUR_STORAGE_BUCKET",
+        messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+        appId: "YOUR_APP_ID"
+    };
 
-        // Initialize Firebase
-        const app = firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
+    // Initialize Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const database = firebase.database(app);
 
-        // Function to save data
-        function saveData() {
-            const name = document.getElementById('name').value;
-            const email = document.getElementById('email').value;
+    // Save data to Firebase
+    function saveData() {
+        const userName = document.getElementById('userName').value;
+        const userEmail = document.getElementById('userEmail').value;
 
-            if (name && email) {
-                db.collection("users").add({
-                    name: name,
-                    email: email
-                })
-                .then(() => {
-                    alert("Data saved successfully!");
-                    document.getElementById('name').value = '';
-                    document.getElementById('email').value = '';
-                })
-                .catch((error) => {
-                    console.error("Error saving data:", error);
-                    alert("Failed to save data.");
-                });
-            } else {
-                alert("Please fill in all fields.");
-            }
+        if (userName && userEmail) {
+            const newUserRef = database.ref('users').push();
+            newUserRef.set({
+                name: userName,
+                email: userEmail
+            }).then(() => {
+                alert('Data saved successfully');
+                document.getElementById('dataOutput').innerHTML = `Saved: Name - ${userName}, Email - ${userEmail}`;
+            }).catch((error) => {
+                console.error('Error saving data: ', error);
+            });
+        } else {
+            alert('Please fill all fields');
         }
+    }
 
-        // Function to read data
-        function readData() {
-            const output = document.getElementById('dataOutput');
-            db.collection("users").get()
-                .then((querySnapshot) => {
-                    output.innerHTML = ''; // Clear previous data
-                    querySnapshot.forEach((doc) => {
-                        output.innerHTML += `<p>ID: ${doc.id}, Name: ${doc.data().name}, Email: ${doc.data().email}</p>`;
-                    });
-                })
-                .catch((error) => {
-                    console.error("Error reading data:", error);
-                    alert("Failed to fetch data.");
-                });
+    // Read data from Firebase
+    function readData() {
+        const userId = document.getElementById('userId').value;
+
+        if (userId) {
+            const userRef = database.ref('users/' + userId);
+            userRef.get().then((snapshot) => {
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    document.getElementById('dataOutput').innerHTML = `User: ${data.name}, Email: ${data.email}`;
+                } else {
+                    document.getElementById('dataOutput').innerHTML = 'No data available for this ID.';
+                }
+            }).catch((error) => {
+                console.error('Error reading data: ', error);
+            });
+        } else {
+            alert('Please enter a user ID');
         }
+    }
 
-        // Function to update data
-        function updateData() {
-            const userId = document.getElementById('userId').value;
-            const name = document.getElementById('name').value;
-            const email = document.getElementById('email').value;
+    // Update data in Firebase
+    function updateData() {
+        const userId = document.getElementById('userId').value;
+        const userName = document.getElementById('userName').value;
+        const userEmail = document.getElementById('userEmail').value;
 
-            if (userId && name && email) {
-                db.collection("users").doc(userId).update({
-                    name: name,
-                    email: email
-                })
-                .then(() => {
-                    alert("Data updated successfully!");
-                    document.getElementById('userId').value = '';
-                    document.getElementById('name').value = '';
-                    document.getElementById('email').value = '';
-                })
-                .catch((error) => {
-                    console.error("Error updating data:", error);
-                    alert("Failed to update data.");
-                });
-            } else {
-                alert("Please fill in all fields.");
-            }
+        if (userId && userName && userEmail) {
+            const userRef = database.ref('users/' + userId);
+            userRef.update({
+                name: userName,
+                email: userEmail
+            }).then(() => {
+                alert('Data updated successfully');
+                document.getElementById('dataOutput').innerHTML = `Updated: Name - ${userName}, Email - ${userEmail}`;
+            }).catch((error) => {
+                console.error('Error updating data: ', error);
+            });
+        } else {
+            alert('Please fill all fields');
         }
+    }
 
-        // Function to delete data
-        function deleteData() {
-            const userId = document.getElementById('userId').value;
+    // Delete data from Firebase
+    function deleteData() {
+        const userId = document.getElementById('userId').value;
 
-            if (userId) {
-                db.collection("users").doc(userId).delete()
-                .then(() => {
-                    alert("Data deleted successfully!");
-                    document.getElementById('userId').value = '';
-                })
-                .catch((error) => {
-                    console.error("Error deleting data:", error);
-                    alert("Failed to delete data.");
-                });
-            } else {
-                alert("Please provide a User ID.");
-            }
+        if (userId) {
+            const userRef = database.ref('users/' + userId);
+            userRef.remove().then(() => {
+                alert('Data deleted successfully');
+                document.getElementById('dataOutput').innerHTML = 'Data deleted successfully';
+            }).catch((error) => {
+                console.error('Error deleting data: ', error);
+            });
+        } else {
+            alert('Please enter a user ID');
         }
-    </script>
+    }
+</script>
+
 </body>
 </html>
