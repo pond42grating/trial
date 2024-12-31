@@ -1,52 +1,169 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Save Admin Data</title>
-  <script type="module">
-    // Import Firebase modules
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - DWS Management</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9fafb;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            width: 350px;
+            text-align: center;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 5px;
+            background-color: #4CAF50;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .button:hover {
+            background-color: #45a049;
+        }
+
+        .small-button {
+            font-size: 14px;
+            background-color: transparent;
+            border: none;
+            color: #4CAF50;
+            cursor: pointer;
+        }
+
+        .small-button:hover {
+            text-decoration: underline;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 20px;
+            top: 58px;
+            cursor: pointer;
+            color: #888;
+        }
+
+        .dark-mode {
+            background-color: #333;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Login</h2>
+    <input type="text" id="username" class="input-field" placeholder="Username">
+    <div style="position: relative;">
+        <input type="password" id="password" class="input-field" placeholder="Password">
+        <span class="toggle-password" onclick="togglePassword()">👁️</span>
+    </div>
+    <label>
+        <input type="checkbox" id="rememberMe"> Remember Me
+    </label>
+    <button class="button" onclick="login()">Login</button>
+    <button class="small-button" onclick="location.href='signup.html'">Sign Up</button>
+    <button class="small-button" onclick="location.href='forget.html'">Forgot Password?</button>
+    <button class="small-button" onclick="toggleDarkMode()">Toggle Dark/Light Mode</button>
+</div>
+
+<script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
-    import { getFirestore, setDoc, doc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
 
-    // Your Firebase configuration
     const firebaseConfig = {
-    apiKey: "AIzaSyAXZgxM6PU-T3D2811KnBszblRWju7rv1Y",
-    authDomain: "dws-management.firebaseapp.com",
-    projectId: "dws-management",
-    storageBucket: "dws-management.firebasestorage.app",
-    messagingSenderId: "23827231923",
-    appId: "1:23827231923:web:97141b6d19c7cd109d2cc6",
-    measurementId: "G-L14GLJDYW7"
-  };
+        apiKey: "YOUR_API_KEY",
+        authDomain: "YOUR_AUTH_DOMAIN",
+        projectId: "YOUR_PROJECT_ID",
+        storageBucket: "YOUR_STORAGE_BUCKET",
+        messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+        appId: "YOUR_APP_ID"
+    };
 
-    // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // Save Admin Data to Firebase
-    async function saveAdminData() {
-      try {
-        const adminData = {
-          username: "admin",
-          password: "admin123"
-        };
-
-        // Save admin data in "users" collection with "admin" document ID
-        await setDoc(doc(db, "users", "admin"), adminData);
-        alert("Admin data saved successfully!");
-      } catch (error) {
-        console.error("Error saving admin data:", error);
-        alert("Failed to save admin data.");
-      }
+    function togglePassword() {
+        const passwordField = document.getElementById("password");
+        if (passwordField.type === "password") {
+            passwordField.type = "text";
+        } else {
+            passwordField.type = "password";
+        }
     }
 
-    // Trigger saveAdminData when the button is clicked
-    window.saveAdminData = saveAdminData;
-  </script>
-</head>
-<body>
-  <h1>Save Admin Data to Firebase</h1>
-  <button onclick="saveAdminData()">Save Admin Data</button>
+    function toggleDarkMode() {
+        document.body.classList.toggle("dark-mode");
+    }
+
+    async function login() {
+        const username = document.getElementById("username").value.trim();
+        const password = document.getElementById("password").value.trim();
+
+        if (!username || !password) {
+            alert("Please fill in all fields!");
+            return;
+        }
+
+        try {
+            // Fetch user data from Firestore
+            const userDoc = await getDoc(doc(db, "Users", username));
+
+            if (!userDoc.exists()) {
+                alert("Username not registered!");
+                return;
+            }
+
+            const userData = userDoc.data();
+
+            if (userData.password === password) {
+                if (userData.role === "admin") {
+                    alert("Welcome, Admin!");
+                    window.location.href = "admin.html";
+                } else {
+                    alert("Login successful!");
+                    window.location.href = "login.html";
+                }
+            } else {
+                alert("Incorrect password!");
+            }
+        } catch (error) {
+            console.error("Error during login:", error);
+            alert("An error occurred during login. Please try again.");
+        }
+    }
+</script>
+
 </body>
 </html>
