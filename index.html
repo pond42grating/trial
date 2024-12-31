@@ -3,125 +3,192 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Write and Check Admin Data</title>
+    <title>Login - DWS Management</title>
+    <link rel="stylesheet" href="styles.css">
     <style>
         body {
             font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
             background-color: #f4f4f9;
-            padding: 20px;
+            transition: background-color 0.3s ease;
+        }
+
+        .dark-mode {
+            background-color: #333;
+            color: white;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 50px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .dark-mode .container {
+            background-color: #444;
+        }
+
+        h2 {
             text-align: center;
         }
 
-        button {
-            background-color: #2196F3;
+        .input-field {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+
+        .button {
+            width: 100%;
+            padding: 12px;
+            background-color: #4CAF50;
             color: white;
-            padding: 10px 20px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
         }
 
-        button:hover {
-            background-color: #1976D2;
+        .button:hover {
+            background-color: #45a049;
         }
 
-        .result {
-            margin-top: 20px;
-            font-size: 18px;
-            font-weight: bold;
+        .remember-me {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
         }
 
-        .input-field {
-            margin-top: 10px;
-            padding: 10px;
-            width: 200px;
-            margin-bottom: 10px;
-            font-size: 16px;
+        .remember-me input {
+            margin-right: 5px;
+        }
+
+        .toggle-theme {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            cursor: pointer;
+        }
+
+        .link {
+            display: block;
+            text-align: center;
+            margin-top: 15px;
+            color: #4CAF50;
+            text-decoration: none;
+        }
+
+        .link:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
 <body>
 
-    <h1>Write and Check Admin Data</h1>
+    <div class="toggle-theme" onclick="toggleTheme()">🌙</div>
+    <div class="container">
+        <h2>Login to DWS</h2>
 
-    <!-- Inputs for admin data -->
-    <input type="text" id="adminUsername" class="input-field" placeholder="Enter Admin Username">
-    <input type="password" id="adminPassword" class="input-field" placeholder="Enter Admin Password">
-    <button onclick="writeAdminData()">Save Admin Data</button>
+        <input type="email" id="email" class="input-field" placeholder="Email" required>
+        <input type="password" id="password" class="input-field" placeholder="Password" required>
+        <div class="remember-me">
+            <input type="checkbox" id="rememberMe">
+            <label for="rememberMe">Remember Me</label>
+        </div>
 
-    <hr>
+        <button class="button" onclick="login()">Login</button>
 
-    <!-- Button to fetch admin data -->
-    <button onclick="testAdminData()">Fetch Admin Data</button>
+        <p class="link"><a href="signup.html">Sign Up</a></p>
+        <p class="link"><a href="forget.html">Forgot Password?</a></p>
+    </div>
 
-    <div id="result" class="result"></div>
+    <script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-firestore.js"></script>
 
-    <script type="module">
-        // Import Firebase app and Firestore
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
-        import { getFirestore, setDoc, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
-
-        // Firebase config (replace with your actual Firebase project config)
+    <script>
+        // Firebase configuration
         const firebaseConfig = {
-    apiKey: "AIzaSyAXZgxM6PU-T3D2811KnBszblRWju7rv1Y",
-    authDomain: "dws-management.firebaseapp.com",
-    projectId: "dws-management",
-    storageBucket: "dws-management.firebasestorage.app",
-    messagingSenderId: "23827231923",
-    appId: "1:23827231923:web:97141b6d19c7cd109d2cc6",
-    measurementId: "G-L14GLJDYW7"
-  };
+            apiKey: "AIzaSyAXZgxM6PU-T3D2811KnBszblRWju7rv1Y",
+            authDomain: "dws-management.firebaseapp.com",
+            projectId: "dws-management",
+            storageBucket: "dws-management.firebasestorage.app",
+            messagingSenderId: "23827231923",
+            appId: "1:23827231923:web:97141b6d19c7cd109d2cc6",
+            measurementId: "G-L14GLJDYW7"
+        };
 
         // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+        const app = firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
 
-        // Function to save admin data to Firestore
-        async function writeAdminData() {
-            const adminUsername = document.getElementById("adminUsername").value;
-            const adminPassword = document.getElementById("adminPassword").value;
+        // Toggle Dark/Light Mode
+        function toggleTheme() {
+            document.body.classList.toggle("dark-mode");
+        }
 
-            if (!adminUsername || !adminPassword) {
-                alert("Please enter both username and password.");
+        // Login function
+        function login() {
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+            const rememberMe = document.getElementById("rememberMe").checked;
+
+            if (!email || !password) {
+                alert("Please enter both email and password.");
                 return;
             }
 
-            try {
-                const docRef = doc(db, "Users", "admin");
-                await setDoc(docRef, {
-                    username: adminUsername,
-                    password: adminPassword,
-                    role: "admin"
-                });
+            auth.signInWithEmailAndPassword(email, password)
+                .then(userCredential => {
+                    const user = userCredential.user;
+                    if (rememberMe) {
+                        localStorage.setItem("user", JSON.stringify(user));
+                    }
 
-                document.getElementById("result").innerHTML = "Admin data saved successfully!";
-            } catch (error) {
-                console.error("Error saving admin data: ", error);
-                document.getElementById("result").innerHTML = "Error saving admin data!";
-            }
+                    // Fetch admin data from Firestore to check credentials
+                    db.collection("admin").doc("adminCredentials").get()
+                        .then(doc => {
+                            if (doc.exists) {
+                                const adminData = doc.data();
+                                const adminEmail = adminData.email;
+                                const adminPassword = adminData.password;
+
+                                if (email === adminEmail && password === adminPassword) {
+                                    window.location.href = "admin.html"; // Admin page
+                                } else {
+                                    window.location.href = "dashboard.html"; // Regular user dashboard
+                                }
+                            } else {
+                                alert("Admin data not found.");
+                            }
+                        })
+                        .catch(error => {
+                            console.error("Error fetching admin data:", error);
+                        });
+                })
+                .catch(error => {
+                    alert("Error: " + error.message);
+                });
         }
 
-        // Function to fetch and display admin data from Firestore
-        async function testAdminData() {
-            try {
-                const docRef = doc(db, "Users", "admin");  // Reference to the admin document in the "Users" collection
-                const docSnap = await getDoc(docRef);
-
-                if (docSnap.exists()) {
-                    const adminData = docSnap.data();
-                    document.getElementById("result").innerHTML = `
-                        <strong>Admin Data Found:</strong><br>
-                        Username: ${adminData.username}<br>
-                        Password: ${adminData.password}<br>
-                        Role: ${adminData.role}
-                    `;
-                } else {
-                    document.getElementById("result").innerHTML = "<strong>No admin data found!</strong>";
-                }
-            } catch (error) {
-                console.error("Error fetching admin data: ", error);
-                document.getElementById("result").innerHTML = "<strong>Error fetching admin data!</strong>";
-            }
+        // Example function to save admin data to Firestore (to be used temporarily for testing)
+        function saveAdminData() {
+            db.collection("admin").doc("adminCredentials").set({
+                email: "admin@dws.com",
+                password: "admin123"
+            })
+            .then(() => {
+                alert("Admin data saved successfully!");
+            })
+            .catch((error) => {
+                console.error("Error saving admin data:", error);
+            });
         }
     </script>
 
