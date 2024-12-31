@@ -66,8 +66,7 @@
     
 
     // Export functions to global scope for HTML buttons
-    window.login = login;
-    window.toggleTheme = toggleTheme;
+    
     
     function toggleTheme() {
       document.body.classList.toggle('dark-mode');
@@ -87,6 +86,9 @@
         document.body.classList.remove('dark-mode');
       }
     };
+    
+    window.login = login;
+    window.toggleTheme = toggleTheme;
     
   </script>
 
