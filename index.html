@@ -3,110 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Dashboard - DWS Management</title>
-
-  <!-- Google Material Icons -->
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-auth.js"></script>
-
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f4f4f9;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      flex-direction: column;
-    }
-
-    .container {
-      background-color: white;
-      padding: 40px;
-      border-radius: 10px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      max-width: 600px;
-      width: 100%;
-      text-align: center;
-    }
-
-    h1 {
-      margin-bottom: 20px;
-      font-size: 24px;
-      color: #333;
-    }
-
-    .btn {
-      width: 100%;
-      padding: 12px;
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 16px;
-    }
-
-    .btn:hover {
-      background-color: #45a049;
-    }
-
-    .user-list {
-      margin-top: 20px;
-      text-align: left;
-    }
-
-    .user-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 10px;
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 5px;
-      background-color: #f9f9f9;
-    }
-
-    .status {
-      font-size: 14px;
-      margin-top: 10px;
-    }
-
-    .error {
-      color: red;
-    }
-
-    .success {
-      color: green;
-    }
-
-    .material-icons {
-      font-size: 24px;
-      color: #4CAF50;
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1>Admin Dashboard</h1>
-    <button class="btn" id="google-sign-in">Sign In with Google</button>
-
-    <div class="user-list" id="user-list">
-      <!-- User list will be populated here -->
-    </div>
-
-    <p id="status" class="status"></p>
-  </div>
-
+  <title>DWS Management - Home</title>
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-app.js";
-    import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, sendEmailVerification, updateProfile } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-auth.js";
-    import { getFirestore, collection, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-firestore.js";
+    // Import Firebase
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
 
     // Firebase configuration
     const firebaseConfig = {
@@ -121,70 +23,174 @@
 
     // Initialize Firebase
     const app = initializeApp(firebaseConfig);
-    const auth = getAuth();
+    const auth = getAuth(app);
     const db = getFirestore(app);
 
-    const googleSignInBtn = document.getElementById('google-sign-in');
-    const userList = document.getElementById('user-list');
-    const status = document.getElementById('status');
+    // Email & Password Login Function
+    async function loginWithEmail() {
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
 
-    // Google Sign-In
-    googleSignInBtn.addEventListener('click', async () => {
+      if (!email || !password) {
+        alert("Please enter both email and password.");
+        return;
+      }
+
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+        window.location.href = "index.html"; // Redirect to home or dashboard
+      } catch (error) {
+        alert("Error during login: " + error.message);
+      }
+    }
+
+    // Google Sign-In Function
+    async function googleSignIn() {
       const provider = new GoogleAuthProvider();
+
       try {
         const result = await signInWithPopup(auth, provider);
         const user = result.user;
-        status.innerText = `Signed in as ${user.displayName}`;
-        status.className = "success";
-        fetchUsers();  // Fetch users after signing in
+
+        // Check if user exists in Firestore
+        const userDocRef = doc(db, "Users", user.uid);
+        const userDoc = await getDoc(userDocRef);
+
+        if (userDoc.exists()) {
+          // If user exists, redirect to the home page
+          window.location.href = "index.html"; // Or another page where you want the user to go
+        } else {
+          // New user, store their data
+          await setDoc(userDocRef, {
+            email: user.email,
+            isApproved: false // Admin approval needed
+          });
+          alert("Sign-up successful! Await admin approval.");
+          window.location.href = "index.html"; // Redirect to home page
+        }
       } catch (error) {
-        status.innerText = `Error: ${error.message}`;
-        status.className = "error";
-      }
-    });
-
-    // Fetch users from Firestore
-    async function fetchUsers() {
-      const usersSnapshot = await getDocs(collection(db, "users"));
-      userList.innerHTML = '';  // Clear current list
-
-      usersSnapshot.forEach((doc) => {
-        const userData = doc.data();
-        const userItem = document.createElement('div');
-        userItem.classList.add('user-item');
-        userItem.innerHTML = `
-          <div>
-            <strong>${userData.name}</strong><br>
-            ${userData.email} - ${userData.status}
-          </div>
-          <button class="btn" onclick="approveUser('${doc.id}')">Approve</button>
-        `;
-        userList.appendChild(userItem);
-      });
-    }
-
-    // Admin approve user
-    async function approveUser(userId) {
-      const userDoc = doc(db, "users", userId);
-      try {
-        await updateDoc(userDoc, {
-          status: "Approved"
-        });
-        status.innerText = "User approved successfully!";
-        status.className = "success";
-        fetchUsers();  // Refresh user list
-      } catch (error) {
-        status.innerText = `Error approving user: ${error.message}`;
-        status.className = "error";
+        console.error("Google Sign-In error: ", error);
+        alert("Error during Google Sign-In: " + error.message);
       }
     }
 
-    // Listen for auth state changes (check if the admin is signed in)
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        fetchUsers();  // Fetch users if the admin is signed in
-      }
-    });
+    // Expose functions to global scope for HTML buttons
+    window.loginWithEmail = loginWithEmail;
+    window.googleSignIn = googleSignIn;
   </script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f9;
+      transition: background-color 0.3s ease;
+    }
+
+    .dark-mode {
+      background-color: #333;
+      color: white;
+    }
+
+    .container {
+      max-width: 400px;
+      margin: 50px auto;
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .dark-mode .container {
+      background-color: #444;
+    }
+
+    h2 {
+      text-align: center;
+    }
+
+    .input-field {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border-radius: 5px;
+      border: 1px solid #ddd;
+    }
+
+    .button {
+      width: 100%;
+      padding: 12px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .button:hover {
+      background-color: #45a049;
+    }
+
+    .google-sign-in-button {
+      width: 100%;
+      padding: 12px;
+      background-color: #4285F4;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 10px;
+    }
+
+    .google-sign-in-button:hover {
+      background-color: #357ae8;
+    }
+
+    .google-sign-in-button .material-icons {
+      margin-right: 10px;
+    }
+
+    .toggle-theme {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      cursor: pointer;
+    }
+
+    .link {
+      display: block;
+      text-align: center;
+      margin-top: 15px;
+      color: #4CAF50;
+      text-decoration: none;
+    }
+
+    .link:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="toggle-theme" onclick="toggleTheme()">🌙</div>
+  <div class="container">
+    <h2>Login to DWS</h2>
+    <!-- Email and Password Login -->
+    <input type="email" id="email" class="input-field" placeholder="Email" required>
+    <input type="password" id="password" class="input-field" placeholder="Password" required>
+    <button class="button" onclick="loginWithEmail()">Login with Email</button>
+
+    <p class="link"><a href="signup.html">Sign Up</a></p>
+    <p class="link"><a href="forget.html">Forgot Password?</a></p>
+
+    <!-- Google Sign-In Button -->
+    <button class="google-sign-in-button" onclick="googleSignIn()">
+      <span class="material-icons">google</span> Sign In with Google
+    </button>
+  </div>
 </body>
 </html>
