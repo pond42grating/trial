@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login - DWS Management</title>
+  <title>Email Verification</title>
   <script type="module">
     // Import Firebase
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
-    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+    import { getAuth, createUserWithEmailAndPassword, sendEmailVerification, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
 
     // Firebase configuration
     const firebaseConfig = {
@@ -22,10 +22,10 @@
 
     // Initialize Firebase
     const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+    const auth = getAuth(app);
 
-    // Login Function
-    async function login() {
+    // Register a new user and send email verification
+    async function registerAndVerify() {
       const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value.trim();
 
@@ -35,28 +35,46 @@
       }
 
       try {
-        // Fetch admin details from Firestore
-        const adminRef = doc(db, "Admin", "Details");
-        const adminDoc = await getDoc(adminRef);
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
 
-        if (adminDoc.exists()) {
-          const adminData = adminDoc.data();
-          if (email === adminData.id && password === adminData.password) {
-            window.location.href = "admin.html"; // Redirect to admin page
-          } else {
-            alert("Invalid credentials.");
-          }
-        } else {
-          alert("Admin data not found.");
-        }
+        await sendEmailVerification(user);
+        alert("Verification email sent. Please check your inbox.");
+
       } catch (error) {
-        console.error("Error fetching admin data: ", error);
-        alert("An error occurred while fetching admin details.");
+        console.error("Error during registration: ", error);
+        alert("Error: " + error.message);
       }
     }
 
-    // Export functions to global scope for HTML buttons
-    window.login = login;
+    // Verify user status after login
+    async function verifyUser() {
+      const email = document.getElementById("loginEmail").value.trim();
+      const password = document.getElementById("loginPassword").value.trim();
+
+      if (!email || !password) {
+        alert("Please enter both email and password.");
+        return;
+      }
+
+      try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+
+        if (user.emailVerified) {
+          alert("You are verified!");
+        } else {
+          alert("Please verify your email before proceeding.");
+        }
+      } catch (error) {
+        console.error("Error during login: ", error);
+        alert("Error: " + error.message);
+      }
+    }
+
+    // Export functions to global scope
+    window.registerAndVerify = registerAndVerify;
+    window.verifyUser = verifyUser;
   </script>
 
   <style>
@@ -64,30 +82,25 @@
       font-family: Arial, sans-serif;
       margin: 0;
       padding: 0;
-      background-color: #f4f4f9;
-      transition: background-color 0.3s ease;
-    }
-
-    .dark-mode {
-      background-color: #333;
-      color: white;
+      background-color: #f4f6f9;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
     }
 
     .container {
-      max-width: 400px;
-      margin: 50px auto;
       background: white;
       padding: 30px;
       border-radius: 10px;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    .dark-mode .container {
-      background-color: #444;
+      width: 100%;
+      max-width: 400px;
     }
 
     h2 {
       text-align: center;
+      margin-bottom: 20px;
     }
 
     .input-field {
@@ -106,56 +119,28 @@
       border: none;
       border-radius: 5px;
       cursor: pointer;
+      margin-top: 10px;
     }
 
     .button:hover {
       background-color: #45a049;
     }
-
-    .remember-me {
-      display: flex;
-      align-items: center;
-      margin: 10px 0;
-    }
-
-    .remember-me input {
-      margin-right: 5px;
-    }
-
-    .toggle-theme {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      cursor: pointer;
-    }
-
-    .link {
-      display: block;
-      text-align: center;
-      margin-top: 15px;
-      color: #4CAF50;
-      text-decoration: none;
-    }
-
-    .link:hover {
-      text-decoration: underline;
-    }
   </style>
 </head>
 
 <body>
-  <div class="toggle-theme" onclick="toggleTheme()">🌙</div>
   <div class="container">
-    <h2>Login to DWS</h2>
-    <input type="email" id="email" class="input-field" placeholder="Email" required>
-    <input type="password" id="password" class="input-field" placeholder="Password" required>
-    <div class="remember-me">
-      <input type="checkbox" id="rememberMe">
-      <label for="rememberMe">Remember Me</label>
-    </div>
-    <button class="button" onclick="login()">Login</button>
-    <p class="link"><a href="signup.html">Sign Up</a></p>
-    <p class="link"><a href="forget.html">Forgot Password?</a></p>
+    <h2>Register & Verify</h2>
+    <input type="email" id="email" class="input-field" placeholder="Enter your email" required>
+    <input type="password" id="password" class="input-field" placeholder="Enter your password" required>
+    <button class="button" onclick="registerAndVerify()">Register & Send Verification Email</button>
+  </div>
+
+  <div class="container" style="margin-top: 20px;">
+    <h2>Verify After Login</h2>
+    <input type="email" id="loginEmail" class="input-field" placeholder="Enter your email" required>
+    <input type="password" id="loginPassword" class="input-field" placeholder="Enter your password" required>
+    <button class="button" onclick="verifyUser()">Login & Verify</button>
   </div>
 </body>
 </html>
