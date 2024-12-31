@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test Admin Data</title>
+    <title>Write and Check Admin Data</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -30,11 +30,28 @@
             font-size: 18px;
             font-weight: bold;
         }
+
+        .input-field {
+            margin-top: 10px;
+            padding: 10px;
+            width: 200px;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
     </style>
 </head>
 <body>
 
-    <h1>Admin Data Test</h1>
+    <h1>Write and Check Admin Data</h1>
+
+    <!-- Inputs for admin data -->
+    <input type="text" id="adminUsername" class="input-field" placeholder="Enter Admin Username">
+    <input type="password" id="adminPassword" class="input-field" placeholder="Enter Admin Password">
+    <button onclick="writeAdminData()">Save Admin Data</button>
+
+    <hr>
+
+    <!-- Button to fetch admin data -->
     <button onclick="testAdminData()">Fetch Admin Data</button>
 
     <div id="result" class="result"></div>
@@ -42,7 +59,7 @@
     <script type="module">
         // Import Firebase app and Firestore
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
-        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+        import { getFirestore, setDoc, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
 
         // Firebase config (replace with your actual Firebase project config)
         const firebaseConfig = {
@@ -59,14 +76,38 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Function to fetch admin data
+        // Function to save admin data to Firestore
+        async function writeAdminData() {
+            const adminUsername = document.getElementById("adminUsername").value;
+            const adminPassword = document.getElementById("adminPassword").value;
+
+            if (!adminUsername || !adminPassword) {
+                alert("Please enter both username and password.");
+                return;
+            }
+
+            try {
+                const docRef = doc(db, "Users", "admin");
+                await setDoc(docRef, {
+                    username: adminUsername,
+                    password: adminPassword,
+                    role: "admin"
+                });
+
+                document.getElementById("result").innerHTML = "Admin data saved successfully!";
+            } catch (error) {
+                console.error("Error saving admin data: ", error);
+                document.getElementById("result").innerHTML = "Error saving admin data!";
+            }
+        }
+
+        // Function to fetch and display admin data from Firestore
         async function testAdminData() {
             try {
                 const docRef = doc(db, "Users", "admin");  // Reference to the admin document in the "Users" collection
                 const docSnap = await getDoc(docRef);
 
                 if (docSnap.exists()) {
-                    // Displaying the admin data
                     const adminData = docSnap.data();
                     document.getElementById("result").innerHTML = `
                         <strong>Admin Data Found:</strong><br>
