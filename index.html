@@ -96,6 +96,8 @@
     <button class="small-button" onclick="location.href='signup.html'">Sign Up</button>
     <button class="small-button" onclick="location.href='forget.html'">Forgot Password?</button>
     <button class="small-button" onclick="toggleDarkMode()">Toggle Dark/Light Mode</button>
+    <hr>
+    <button class="button" onclick="testAdminData()">Test Admin Data</button>
 </div>
 
 <script type="module">
@@ -103,14 +105,13 @@
     import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
 
     const firebaseConfig = {
-    apiKey: "AIzaSyAXZgxM6PU-T3D2811KnBszblRWju7rv1Y",
-    authDomain: "dws-management.firebaseapp.com",
-    projectId: "dws-management",
-    storageBucket: "dws-management.firebasestorage.app",
-    messagingSenderId: "23827231923",
-    appId: "1:23827231923:web:97141b6d19c7cd109d2cc6",
-    measurementId: "G-L14GLJDYW7"
-  };
+        apiKey: "YOUR_API_KEY",
+        authDomain: "YOUR_AUTH_DOMAIN",
+        projectId: "YOUR_PROJECT_ID",
+        storageBucket: "YOUR_STORAGE_BUCKET",
+        messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+        appId: "YOUR_APP_ID"
+    };
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
@@ -162,6 +163,21 @@
         } catch (error) {
             console.error("Error during login:", error);
             alert("An error occurred during login. Please try again.");
+        }
+    }
+
+    async function testAdminData() {
+        try {
+            const adminDoc = await getDoc(doc(db, "Users", "admin"));
+            if (adminDoc.exists()) {
+                console.log("Admin Data:", adminDoc.data());
+                alert(`Admin Data: ${JSON.stringify(adminDoc.data())}`);
+            } else {
+                alert("Admin data not found in Firestore.");
+            }
+        } catch (error) {
+            console.error("Error fetching admin data:", error);
+            alert("An error occurred while fetching admin data.");
         }
     }
 </script>
