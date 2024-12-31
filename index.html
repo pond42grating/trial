@@ -1,131 +1,113 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Firebase CRUD Operations</title>
-    <script type="module">
-        // Import the functions you need from the SDKs you need
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
-        import { getDatabase, ref, set, get, update, remove } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Email Verification with Firebase</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
+    }
 
-        // Your web app's Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyAXZgxM6PU-T3D2811KnBszblRWju7rv1Y",
-            authDomain: "dws-management.firebaseapp.com",
-            databaseURL: "https://dws-management-default-rtdb.firebaseio.com",
-            projectId: "dws-management",
-            storageBucket: "dws-management.firebasestorage.app",
-            messagingSenderId: "23827231923",
-            appId: "1:23827231923:web:97141b6d19c7cd109d2cc6",
-            measurementId: "G-L14GLJDYW7"
-        };
+    .btn {
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+    }
 
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const database = getDatabase(app);
+    .btn:hover {
+      background-color: #45a049;
+    }
 
-        // Create Data (Add new user)
-        function createData() {
-            const userName = document.getElementById('userName').value;
-            const userEmail = document.getElementById('userEmail').value;
+    .error {
+      color: red;
+      font-size: 14px;
+    }
 
-            if (userName && userEmail) {
-                const newUserRef = ref(database, 'users/' + Date.now()); // Using timestamp as unique user ID
-                set(newUserRef, {
-                    name: userName,
-                    email: userEmail
-                }).then(() => {
-                    alert('Data saved successfully!');
-                    readData(); // Refresh user list after save
-                }).catch((error) => {
-                    console.error('Error saving data: ', error);
-                });
-            } else {
-                alert('Please fill in both fields!');
-            }
-        }
-
-        // Read Data (Fetch all users)
-        function readData() {
-            const usersListElement = document.getElementById('usersList');
-            usersListElement.innerHTML = ''; // Clear the list before updating
-
-            const usersRef = ref(database, 'users');
-            get(usersRef).then((snapshot) => {
-                const users = snapshot.val();
-                if (users) {
-                    for (let userId in users) {
-                        const user = users[userId];
-                        const li = document.createElement('li');
-                        li.textContent = `${user.name} (${user.email}) - ID: ${userId}`;
-                        usersListElement.appendChild(li);
-                    }
-                } else {
-                    alert('No users found.');
-                }
-            }).catch((error) => {
-                console.error('Error reading data: ', error);
-            });
-        }
-
-        // Update Data (Modify user data)
-        function updateData() {
-            const userId = document.getElementById('userId').value;
-            const userName = document.getElementById('userName').value;
-            const userEmail = document.getElementById('userEmail').value;
-
-            if (userId && userName && userEmail) {
-                const userRef = ref(database, 'users/' + userId);
-                update(userRef, {
-                    name: userName,
-                    email: userEmail
-                }).then(() => {
-                    alert('User data updated successfully!');
-                    readData(); // Refresh user list after update
-                }).catch((error) => {
-                    console.error('Error updating data: ', error);
-                });
-            } else {
-                alert('Please provide user ID, name, and email to update.');
-            }
-        }
-
-        // Delete Data (Remove user by ID)
-        function deleteData() {
-            const userId = document.getElementById('userId').value;
-
-            if (userId) {
-                const userRef = ref(database, 'users/' + userId);
-                remove(userRef).then(() => {
-                    alert('User deleted successfully!');
-                    readData(); // Refresh user list after delete
-                }).catch((error) => {
-                    console.error('Error deleting data: ', error);
-                });
-            } else {
-                alert('Please provide a user ID to delete.');
-            }
-        }
-    </script>
+    .success {
+      color: green;
+      font-size: 14px;
+    }
+  </style>
 </head>
 <body>
+  <h1>Email Verification</h1>
 
-<h2>Firebase CRUD Operations</h2>
+  <!-- Sign Up Form -->
+  <input type="email" id="email" placeholder="Enter your email" required>
+  <button class="btn" id="sign-up-btn">Sign Up</button>
+  
+  <p id="status"></p>
 
-<!-- Input fields for data -->
-<input type="text" id="userName" placeholder="Enter name" />
-<input type="email" id="userEmail" placeholder="Enter email" />
-<input type="text" id="userId" placeholder="Enter user ID for update/delete" />
+  <script type="module">
+    import { getAuth, createUserWithEmailAndPassword, sendEmailVerification } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-auth.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-app.js";
 
-<!-- Buttons for CRUD operations -->
-<button onclick="createData()">Create Data</button>
-<button onclick="readData()">Read Data</button>
-<button onclick="updateData()">Update Data</button>
-<button onclick="deleteData()">Delete Data</button>
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyAXZgxM6PU-T3D2811KnBszblRWju7rv1Y",
+      authDomain: "dws-management.firebaseapp.com",
+      projectId: "dws-management",
+      storageBucket: "dws-management.firebasestorage.app",
+      messagingSenderId: "23827231923",
+      appId: "1:23827231923:web:97141b6d19c7cd109d2cc6",
+      measurementId: "G-L14GLJDYW7"
+    };
 
-<h3>Users List:</h3>
-<ul id="usersList"></ul>
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth();
 
+    const emailInput = document.getElementById("email");
+    const signUpBtn = document.getElementById("sign-up-btn");
+    const status = document.getElementById("status");
+
+    // Sign up user and send email verification
+    signUpBtn.addEventListener("click", () => {
+      const email = emailInput.value;
+
+      if (!email) {
+        status.innerText = "Please enter a valid email address.";
+        status.className = "error";
+        return;
+      }
+
+      // Create user with email and password (password can be set here or passed from another input)
+      const password = "defaultPassword123"; // Use a default password or get from input
+
+      createUserWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+          const user = userCredential.user;
+
+          // Send email verification
+          sendEmailVerification(user)
+            .then(() => {
+              status.innerText = `Verification email sent to ${email}. Please check your inbox.`;
+              status.className = "success";
+              emailInput.disabled = true;  // Disable email input after signup
+              signUpBtn.disabled = true;   // Disable button after sign-up
+            })
+            .catch((error) => {
+              status.innerText = `Error sending verification email: ${error.message}`;
+              status.className = "error";
+            });
+        })
+        .catch((error) => {
+          status.innerText = `Error signing up: ${error.message}`;
+          status.className = "error";
+        });
+    });
+  </script>
 </body>
 </html>
