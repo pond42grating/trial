@@ -3,10 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Forgot Password - DWS Management</title>
+  <title>Sign Up - DWS Management</title>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
-    import { getAuth, fetchSignInMethodsForEmail, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
+    import { getAuth, createUserWithEmailAndPassword, sendEmailVerification } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
+    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
 
     // Firebase configuration
     const firebaseConfig = {
@@ -22,36 +23,65 @@
     // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
+    const db = getFirestore(app);
 
-    // Function to verify user and reset password
-    async function verifyAndResetPassword() {
+    // Sign Up Function
+    async function signUp() {
       const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
+      const confirmPassword = document.getElementById("confirmPassword").value.trim();
 
-      if (!email) {
-        alert("Please enter your email.");
+      if (!email || !password || !confirmPassword) {
+        alert("All fields are required.");
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        alert("Passwords do not match.");
         return;
       }
 
       try {
-        // Verify if the user exists
-        const signInMethods = await fetchSignInMethodsForEmail(auth, email);
-        if (signInMethods.length === 0) {
-          alert("No account found with this email. Please sign up first.");
-          return;
-        }
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
 
-        // Send password reset email
-        await sendPasswordResetEmail(auth, email);
-        alert("Password reset email sent! Please check your inbox.");
+        // Save user data to Firestore
+        const userDocRef = doc(db, "Users", user.uid);
+        await setDoc(userDocRef, {
+          email: email,
+          isApproved: false // Admin approval needed
+        });
+
+        // Send email verification
+        await sendEmailVerification(user);
+        alert("Sign up successful! A verification email has been sent to your email address.");
+        window.location.href = "index.html";
       } catch (error) {
-        console.error("Error during password reset: ", error);
+        console.error("Error during sign up: ", error);
         alert("Error: " + error.message);
       }
     }
 
-    // Expose the function globally
-    window.verifyAndResetPassword = verifyAndResetPassword;
+    // Toggle password visibility
+    function togglePasswordVisibility(id) {
+      const input = document.getElementById(id);
+      const icon = document.getElementById(`${id}Icon`);
+      if (input.type === "password") {
+        input.type = "text";
+        icon.textContent = "visibility";
+      } else {
+        input.type = "password";
+        icon.textContent = "visibility_off";
+      }
+    }
+
+    // Expose functions globally
+    window.signUp = signUp;
+    window.togglePasswordVisibility = togglePasswordVisibility;
   </script>
+
+  <!-- Include Google Material Icons -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
   <style>
     body {
@@ -84,6 +114,24 @@
       margin: 10px 0;
       border: 1px solid #ddd;
       border-radius: 5px;
+      position: relative;
+    }
+
+    .input-container {
+      display: flex;
+      align-items: center;
+      position: relative;
+    }
+
+    .input-container input {
+      flex: 1;
+    }
+
+    .input-container .material-icons {
+      position: absolute;
+      right: 10px;
+      cursor: pointer;
+      color: #888;
     }
 
     .button {
@@ -99,14 +147,38 @@
     .button:hover {
       background-color: #45a049;
     }
+
+    .link {
+      display: block;
+      text-align: center;
+      margin-top: 15px;
+      color: #4CAF50;
+      text-decoration: none;
+    }
+
+    .link:hover {
+      text-decoration: underline;
+    }
   </style>
 </head>
 
 <body>
   <div class="container">
-    <h2>Forgot Password</h2>
+    <h2>Sign Up</h2>
     <input type="email" id="email" class="input-field" placeholder="Enter your email" required>
-    <button class="button" onclick="verifyAndResetPassword()">Reset Password</button>
+
+    <div class="input-container">
+      <input type="password" id="password" class="input-field" placeholder="Enter your password" required>
+      <span class="material-icons" id="passwordIcon" onclick="togglePasswordVisibility('password')">visibility_off</span>
+    </div>
+
+    <div class="input-container">
+      <input type="password" id="confirmPassword" class="input-field" placeholder="Confirm your password" required>
+      <span class="material-icons" id="confirmPasswordIcon" onclick="togglePasswordVisibility('confirmPassword')">visibility_off</span>
+    </div>
+
+    <button class="button" onclick="signUp()">Sign Up</button>
+    <p class="link"><a href="index.html">Back to Login</a></p>
   </div>
 </body>
 </html>
