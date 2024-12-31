@@ -6,8 +6,7 @@
   <title>Forget Password - DWS Management</title>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
-    import { getAuth, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+    import { getAuth, fetchSignInMethodsForEmail, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
 
     // Firebase configuration
     const firebaseConfig = {
@@ -23,7 +22,6 @@
     // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
-    const db = getFirestore(app);
 
     // Forget Password Function
     async function forgetPassword() {
@@ -35,12 +33,11 @@
       }
 
       try {
-        // Check if email exists in Firestore
-        const usersRef = doc(db, "Users", email);
-        const userDoc = await getDoc(usersRef);
-
-        if (userDoc.exists()) {
-          // Send password reset email
+        // Check if the email exists in Firebase Authentication
+        const signInMethods = await fetchSignInMethodsForEmail(auth, email);
+        
+        if (signInMethods.length > 0) {
+          // If the email exists, send a password reset email
           await sendPasswordResetEmail(auth, email);
           alert("A password reset email has been sent to your email address.");
           window.location.href = "index.html";
