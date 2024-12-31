@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Save Admin Data</title>
+    <title>Save Normal Data</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -51,9 +51,17 @@
 <body>
 
     <div class="container">
-        <h2>Admin Data</h2>
+        <h2>Save Normal Data</h2>
 
-        <button class="button" onclick="saveAdminData()">Save Admin Data</button>
+        <!-- Input fields for name and email -->
+        <input type="text" id="name" class="input-field" placeholder="Enter name" />
+        <input type="email" id="email" class="input-field" placeholder="Enter email" />
+
+        <!-- Save Button -->
+        <button class="button" onclick="saveNormalData()">Save Data</button>
+
+        <!-- Test Button (to read data) -->
+        <button class="button" onclick="testReadData()">Test Read Data</button>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-app.js"></script>
@@ -75,21 +83,40 @@
         const app = firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // Function to save admin data
-        function saveAdminData() {
-            const adminData = {
-                email: "admin@dws.com",
-                password: "admin123"
-            };
+        // Function to save normal data to Firestore
+        function saveNormalData() {
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
 
-            // Save data to Firestore
-            db.collection("admin").doc("adminCredentials").set(adminData)
+            // Check if the fields are not empty
+            if (name && email) {
+                // Save data to Firestore
+                db.collection("users").add({
+                    name: name,
+                    email: email
+                })
                 .then(() => {
-                    alert("Admin data saved successfully!");
+                    alert("Data saved successfully!");
                 })
                 .catch((error) => {
-                    console.error("Error saving admin data:", error);
-                    alert("Failed to save admin data.");
+                    console.error("Error saving data:", error);
+                    alert("Failed to save data.");
+                });
+            } else {
+                alert("Please fill in both fields.");
+            }
+        }
+
+        // Function to read and test data from Firestore
+        function testReadData() {
+            db.collection("users").get()
+                .then((querySnapshot) => {
+                    querySnapshot.forEach((doc) => {
+                        console.log(doc.id, " => ", doc.data());
+                    });
+                })
+                .catch((error) => {
+                    console.error("Error reading data:", error);
                 });
         }
     </script>
