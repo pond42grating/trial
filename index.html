@@ -109,29 +109,26 @@
         <p class="link"><a href="signup.html">Sign Up</a></p>
         <p class="link"><a href="forget.html">Forgot Password?</a></p>
         <button class="button" onclick="getAdminDetails()">Get Admin Details</button>
-        <div id="adminDetails"></div> <!-- Placeholder for admin details -->
+        <div id="adminDetails"></div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
         import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
 
         // Firebase Configuration
         const firebaseConfig = {
-            apiKey: "AIzaSyAXZgxM6PU-T3D2811KnBszblRWju7rv1Y",
-            authDomain: "dws-management.firebaseapp.com",
-            databaseURL: "https://dws-management-default-rtdb.firebaseio.com",
-            projectId: "dws-management",
-            storageBucket: "dws-management.appspot.com",
-            messagingSenderId: "23827231923",
-            appId: "1:23827231923:web:97141b6d19c7cd109d2cc6",
-            measurementId: "G-L14GLJDYW7"
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            databaseURL: "YOUR_DATABASE_URL",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID",
         };
 
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
         const db = getFirestore(app);
 
         // Toggle Dark/Light Mode
@@ -141,9 +138,8 @@
 
         // Login Function
         async function login() {
-            const email = document.getElementById("email").value;
-            const password = document.getElementById("password").value;
-            const rememberMe = document.getElementById("rememberMe").checked;
+            const email = document.getElementById("email").value.trim();
+            const password = document.getElementById("password").value.trim();
 
             if (!email || !password) {
                 alert("Please enter both email and password.");
@@ -151,27 +147,33 @@
             }
 
             try {
-                // Sign in with email and password
-                const userCredential = await signInWithEmailAndPassword(auth, email, password);
-                const user = userCredential.user;
-
-                if (rememberMe) {
-                    localStorage.setItem("user", JSON.stringify(user));
-                }
-
-                // Check if the user is admin
-                const adminRef = doc(db, "users", user.uid);
+                // Fetch admin data
+                const adminRef = doc(db, "admin", "adminCredentials");
                 const adminDoc = await getDoc(adminRef);
 
                 if (adminDoc.exists()) {
-                    const userData = adminDoc.data();
-                    if (userData.role === "admin") {
+                    const adminData = adminDoc.data();
+
+                    // Check admin credentials
+                    if (email === adminData.email && password === adminData.password) {
                         window.location.href = "admin.html"; // Redirect to admin page
-                    } else {
+                        return;
+                    }
+                }
+
+                // Check if user exists
+                const userRef = doc(db, "users", email); // Use email as the document ID for users
+                const userDoc = await getDoc(userRef);
+
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+                    if (userData.password === password) {
                         window.location.href = "createDWS.html"; // Redirect to user dashboard
+                    } else {
+                        alert("Incorrect password.");
                     }
                 } else {
-                    alert("User role not found. Contact support.");
+                    alert("User not found.");
                 }
             } catch (error) {
                 alert("Error: " + error.message);
