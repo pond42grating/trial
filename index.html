@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Firestore Test</title>
+  <title>Admin Data Firestore</title>
   <script type="module">
     // Import Firebase
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
@@ -25,35 +24,50 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // Function to add data to Firestore
-    async function addData() {
-      const docRef = doc(db, "User", "User"); // Parent path: /User, Document ID: User
-      await setDoc(docRef, {
-        Main: "This is a test message!" // Your field and value
-      });
-      alert("Data added successfully!");
+    // Function to add admin details to Firestore
+    async function addAdminData() {
+      const adminId = document.getElementById('adminId').value;
+      const adminPassword = document.getElementById('adminPassword').value;
+
+      if (adminId && adminPassword) {
+        const docRef = doc(db, "Admin", "Details"); // Store in /Admin/Details
+        await setDoc(docRef, {
+          id: adminId,
+          password: adminPassword
+        });
+        alert("Admin data added successfully!");
+      } else {
+        alert("Please provide both Admin ID and Password.");
+      }
     }
 
-    // Function to retrieve data from Firestore
-    async function getData() {
-      const docRef = doc(db, "User", "User"); // Parent path: /User, Document ID: User
+    // Function to retrieve admin details from Firestore
+    async function getAdminData() {
+      const docRef = doc(db, "Admin", "Details"); // Fetch from /Admin/Details
       const docSnap = await getDoc(docRef);
 
       if (docSnap.exists()) {
-        alert("Data retrieved: " + docSnap.data().Main);
+        const adminData = docSnap.data();
+        alert("Admin ID: " + adminData.id + ", Password: " + adminData.password);
       } else {
-        alert("No such document!");
+        alert("No admin data found!");
       }
     }
 
     // Export functions to global scope for HTML buttons
-    window.addData = addData;
-    window.getData = getData;
+    window.addAdminData = addAdminData;
+    window.getAdminData = getAdminData;
   </script>
 </head>
 <body>
-  <h1>Firestore Test</h1>
-  <button onclick="addData()">Add Data</button>
-  <button onclick="getData()">Get Data</button>
+  <h1>Admin Data Firestore</h1>
+
+  <!-- Input fields for Admin details -->
+  <input type="text" id="adminId" placeholder="Enter Admin ID" />
+  <input type="password" id="adminPassword" placeholder="Enter Admin Password" />
+
+  <!-- Buttons for CRUD operations -->
+  <button onclick="addAdminData()">Add Admin Data</button>
+  <button onclick="getAdminData()">Get Admin Data</button>
 </body>
 </html>
