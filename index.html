@@ -113,7 +113,9 @@
     </div>
 
     <script type="module">
+        // Firebase Initialization
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-analytics.js";
         import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
 
@@ -121,15 +123,17 @@
         const firebaseConfig = {
             apiKey: "AIzaSyAXZgxM6PU-T3D2811KnBszblRWju7rv1Y",
             authDomain: "dws-management.firebaseapp.com",
+            databaseURL: "https://dws-management-default-rtdb.firebaseio.com",
             projectId: "dws-management",
             storageBucket: "dws-management.firebasestorage.app",
             messagingSenderId: "23827231923",
-            appId: "1:23827231923:web:0128462cbe55dfdc9d2cc6",
-            measurementId: "G-6VZVVDS3S0"
+            appId: "1:23827231923:web:97141b6d19c7cd109d2cc6",
+            measurementId: "G-L14GLJDYW7"
         };
 
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
         const db = getFirestore(app);
         const auth = getAuth(app);
 
