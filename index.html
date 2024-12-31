@@ -1,194 +1,59 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - DWS Management</title>
-    <link rel="stylesheet" href="styles.css">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f9;
-            transition: background-color 0.3s ease;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Firestore Test</title>
+  <script type="module">
+    // Import Firebase
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+    import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
 
-        .dark-mode {
-            background-color: #333;
-            color: white;
-        }
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyAXZgxM6PU-T3D2811KnBszblRWju7rv1Y",
+      authDomain: "dws-management.firebaseapp.com",
+      projectId: "dws-management",
+      storageBucket: "dws-management.firebasestorage.app",
+      messagingSenderId: "23827231923",
+      appId: "1:23827231923:web:0128462cbe55dfdc9d2cc6",
+      measurementId: "G-6VZVVDS3S0"
+    };
 
-        .container {
-            max-width: 400px;
-            margin: 50px auto;
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-        .dark-mode .container {
-            background-color: #444;
-        }
+    // Function to add data to Firestore
+    async function addData() {
+      const docRef = doc(db, "User", "User"); // Parent path: /User, Document ID: User
+      await setDoc(docRef, {
+        Main: "This is a test message!" // Your field and value
+      });
+      alert("Data added successfully!");
+    }
 
-        h2 {
-            text-align: center;
-        }
+    // Function to retrieve data from Firestore
+    async function getData() {
+      const docRef = doc(db, "User", "User"); // Parent path: /User, Document ID: User
+      const docSnap = await getDoc(docRef);
 
-        .input-field {
-            width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            border-radius: 5px;
-            border: 1px solid #ddd;
-        }
+      if (docSnap.exists()) {
+        alert("Data retrieved: " + docSnap.data().Main);
+      } else {
+        alert("No such document!");
+      }
+    }
 
-        .button {
-            width: 100%;
-            padding: 12px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        .button:hover {
-            background-color: #45a049;
-        }
-
-        .remember-me {
-            display: flex;
-            align-items: center;
-            margin: 10px 0;
-        }
-
-        .remember-me input {
-            margin-right: 5px;
-        }
-
-        .toggle-theme {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            cursor: pointer;
-        }
-
-        .link {
-            display: block;
-            text-align: center;
-            margin-top: 15px;
-            color: #4CAF50;
-            text-decoration: none;
-        }
-
-        .link:hover {
-            text-decoration: underline;
-        }
-
-        #adminDetails {
-            margin-top: 20px;
-            font-size: 14px;
-            text-align: center;
-            color: #555;
-        }
-    </style>
+    // Export functions to global scope for HTML buttons
+    window.addData = addData;
+    window.getData = getData;
+  </script>
 </head>
 <body>
-    <div class="toggle-theme" onclick="toggleTheme()">🌙</div>
-    <div class="container">
-        <h2>Login to DWS</h2>
-        <input type="email" id="email" class="input-field" placeholder="Email" required>
-        <input type="password" id="password" class="input-field" placeholder="Password" required>
-        <div class="remember-me">
-            <input type="checkbox" id="rememberMe">
-            <label for="rememberMe">Remember Me</label>
-        </div>
-        <button class="button" onclick="login()">Login</button>
-        <p class="link"><a href="signup.html">Sign Up</a></p>
-        <p class="link"><a href="forget.html">Forgot Password?</a></p>
-        <button class="button" onclick="getAdminDetails()">Get Admin Details</button>
-        <div id="adminDetails"></div>
-    </div>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
-        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
-
-        // Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyAXZgxM6PU-T3D2811KnBszblRWju7rv1Y",
-            authDomain: "dws-management.firebaseapp.com",
-            databaseURL: "https://dws-management-default-rtdb.firebaseio.com",
-            projectId: "dws-management",
-            storageBucket: "dws-management.appspot.com",
-            messagingSenderId: "23827231923",
-            appId: "1:23827231923:web:97141b6d19c7cd109d2cc6",
-            measurementId: "G-L14GLJDYW7"
-        };
-
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-
-        // Toggle Dark/Light Mode
-        window.toggleTheme = function () {
-            document.body.classList.toggle("dark-mode");
-        };
-        
-        async function getAdminDetails() {
-            const adminDetailsDiv = document.getElementById("adminDetails");
-            adminDetailsDiv.textContent = "Fetching admin details...";
-
-            try {
-                const adminRef = doc(db, "admin", "adminCredentials");
-                const adminDoc = await getDoc(adminRef);
-
-                if (adminDoc.exists()) {
-                    const adminData = adminDoc.data();
-                    adminDetailsDiv.textContent = `Admin Email: ${adminData.email}, Admin Password: ${adminData.password}`;
-                } else {
-                    adminDetailsDiv.textContent = "No admin details found.";
-                }
-            } catch (error) {
-                console.error("Error fetching admin details: ", error);
-                adminDetailsDiv.textContent = "Error fetching admin details.";
-            }
-        }
-
-        // Login Function
-        async function login() {
-            const email = document.getElementById("email").value.trim();
-            const password = document.getElementById("password").value.trim();
-
-            if (!email || !password) {
-                alert("Please enter both email and password.");
-                return;
-            }
-
-            try {
-                const adminRef = doc(db, "admin", "adminCredentials");
-                const adminDoc = await getDoc(adminRef);
-
-                if (adminDoc.exists()) {
-                    const adminData = adminDoc.data();
-                    if (email === adminData.email && password === adminData.password) {
-                        window.location.href = "admin.html";
-                    } else {
-                        alert("Invalid credentials.");
-                    }
-                } else {
-                    alert("Admin data not found.");
-                }
-            } catch (error) {
-                console.error("Error fetching admin data: ", error);
-                alert("An error occurred while fetching admin details.");
-            }
-        }
-
-        // Fetch and display admin details
-        
-    </script>
+  <h1>Firestore Test</h1>
+  <button onclick="addData()">Add Data</button>
+  <button onclick="getData()">Get Data</button>
 </body>
 </html>
