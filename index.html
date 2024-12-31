@@ -3,33 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - DWS Management</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Firebase CRUD Operations</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
             background-color: #f4f4f9;
-            transition: background-color 0.3s ease;
-        }
-
-        .dark-mode {
-            background-color: #333;
-            color: white;
         }
 
         .container {
-            max-width: 400px;
+            max-width: 500px;
             margin: 50px auto;
             background: white;
             padding: 30px;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .dark-mode .container {
-            background-color: #444;
         }
 
         h2 {
@@ -58,142 +47,140 @@
             background-color: #45a049;
         }
 
-        .remember-me {
+        .action-btns {
             display: flex;
-            align-items: center;
-            margin: 10px 0;
+            justify-content: space-between;
         }
 
-        .remember-me input {
-            margin-right: 5px;
-        }
-
-        .toggle-theme {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            cursor: pointer;
-        }
-
-        .link {
-            display: block;
-            text-align: center;
-            margin-top: 15px;
-            color: #4CAF50;
-            text-decoration: none;
-        }
-
-        .link:hover {
-            text-decoration: underline;
+        .action-btns button {
+            flex: 1;
+            margin: 0 5px;
         }
     </style>
 </head>
 <body>
 
-    <div class="toggle-theme" onclick="toggleTheme()">🌙</div>
     <div class="container">
-        <h2>Login to DWS</h2>
+        <h2>Firebase CRUD Operations</h2>
 
-        <input type="email" id="email" class="input-field" placeholder="Email" required>
-        <input type="password" id="password" class="input-field" placeholder="Password" required>
-        <div class="remember-me">
-            <input type="checkbox" id="rememberMe">
-            <label for="rememberMe">Remember Me</label>
+        <!-- Input fields for data -->
+        <input type="text" id="name" class="input-field" placeholder="Enter name" />
+        <input type="email" id="email" class="input-field" placeholder="Enter email" />
+        <input type="text" id="userId" class="input-field" placeholder="Enter User ID (for update & delete)" />
+
+        <div class="action-btns">
+            <button class="button" onclick="saveData()">Save Data</button>
+            <button class="button" onclick="readData()">Read Data</button>
+            <button class="button" onclick="updateData()">Update Data</button>
+            <button class="button" onclick="deleteData()">Delete Data</button>
         </div>
 
-        <button class="button" onclick="login()">Login</button>
-
-        <p class="link"><a href="signup.html">Sign Up</a></p>
-        <p class="link"><a href="forget.html">Forgot Password?</a></p>
-
-        <button class="button" onclick="saveAdminData()">Save Admin Data</button> <!-- Button to save admin data -->
+        <div id="dataOutput" style="margin-top: 20px;"></div>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-firestore.js"></script>
 
     <script>
         // Firebase configuration
         const firebaseConfig = {
-    apiKey: "AIzaSyAXZgxM6PU-T3D2811KnBszblRWju7rv1Y",
-    authDomain: "dws-management.firebaseapp.com",
-    projectId: "dws-management",
-    storageBucket: "dws-management.firebasestorage.app",
-    messagingSenderId: "23827231923",
-    appId: "1:23827231923:web:97141b6d19c7cd109d2cc6",
-    measurementId: "G-L14GLJDYW7"
-  };
+            apiKey: "AIzaSyAXZgxM6PU-T3D2811KnBszblRWju7rv1Y",
+            authDomain: "dws-management.firebaseapp.com",
+            projectId: "dws-management",
+            storageBucket: "dws-management.firebasestorage.app",
+            messagingSenderId: "23827231923",
+            appId: "1:23827231923:web:97141b6d19c7cd109d2cc6",
+            measurementId: "G-L14GLJDYW7"
+        };
 
         // Initialize Firebase
         const app = firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
         const db = firebase.firestore();
 
-        // Toggle Dark/Light Mode
-        function toggleTheme() {
-            document.body.classList.toggle("dark-mode");
+        // Function to save data
+        function saveData() {
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+
+            if (name && email) {
+                db.collection("users").add({
+                    name: name,
+                    email: email
+                })
+                .then(() => {
+                    alert("Data saved successfully!");
+                    document.getElementById('name').value = '';
+                    document.getElementById('email').value = '';
+                })
+                .catch((error) => {
+                    console.error("Error saving data:", error);
+                    alert("Failed to save data.");
+                });
+            } else {
+                alert("Please fill in all fields.");
+            }
         }
 
-        // Login function
-        function login() {
-            const email = document.getElementById("email").value;
-            const password = document.getElementById("password").value;
-            const rememberMe = document.getElementById("rememberMe").checked;
-
-            if (!email || !password) {
-                alert("Please enter both email and password.");
-                return;
-            }
-
-            auth.signInWithEmailAndPassword(email, password)
-                .then(userCredential => {
-                    const user = userCredential.user;
-                    if (rememberMe) {
-                        localStorage.setItem("user", JSON.stringify(user));
-                    }
-
-                    // Fetch admin data from Firestore to check credentials
-                    db.collection("admin").doc("adminCredentials").get()
-                        .then(doc => {
-                            if (doc.exists) {
-                                const adminData = doc.data();
-                                const adminEmail = adminData.email;
-                                const adminPassword = adminData.password;
-
-                                if (email === adminEmail && password === adminPassword) {
-                                    window.location.href = "admin.html"; // Admin page
-                                } else {
-                                    window.location.href = "dashboard.html"; // Regular user dashboard
-                                }
-                            } else {
-                                alert("Admin data not found.");
-                            }
-                        })
-                        .catch(error => {
-                            alert("Error fetching admin data.");
-                        });
+        // Function to read data
+        function readData() {
+            const output = document.getElementById('dataOutput');
+            db.collection("users").get()
+                .then((querySnapshot) => {
+                    output.innerHTML = ''; // Clear previous data
+                    querySnapshot.forEach((doc) => {
+                        output.innerHTML += `<p>ID: ${doc.id}, Name: ${doc.data().name}, Email: ${doc.data().email}</p>`;
+                    });
                 })
-                .catch(error => {
-                    alert("Error: " + error.message);
+                .catch((error) => {
+                    console.error("Error reading data:", error);
+                    alert("Failed to fetch data.");
                 });
         }
 
-        // Save Admin Data to Firestore (used temporarily for testing)
-        function saveAdminData() {
-            db.collection("admin").doc("adminCredentials").set({
-                email: "admin@dws.com",
-                password: "admin123"
-            })
-            .then(() => {
-                alert("Admin data saved successfully!");
-            })
-            .catch((error) => {
-                console.error("Error saving admin data:", error);
-                alert("Failed to save admin data.");
-            });
+        // Function to update data
+        function updateData() {
+            const userId = document.getElementById('userId').value;
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+
+            if (userId && name && email) {
+                db.collection("users").doc(userId).update({
+                    name: name,
+                    email: email
+                })
+                .then(() => {
+                    alert("Data updated successfully!");
+                    document.getElementById('userId').value = '';
+                    document.getElementById('name').value = '';
+                    document.getElementById('email').value = '';
+                })
+                .catch((error) => {
+                    console.error("Error updating data:", error);
+                    alert("Failed to update data.");
+                });
+            } else {
+                alert("Please fill in all fields.");
+            }
+        }
+
+        // Function to delete data
+        function deleteData() {
+            const userId = document.getElementById('userId').value;
+
+            if (userId) {
+                db.collection("users").doc(userId).delete()
+                .then(() => {
+                    alert("Data deleted successfully!");
+                    document.getElementById('userId').value = '';
+                })
+                .catch((error) => {
+                    console.error("Error deleting data:", error);
+                    alert("Failed to delete data.");
+                });
+            } else {
+                alert("Please provide a User ID.");
+            }
         }
     </script>
-
 </body>
 </html>
