@@ -3,56 +3,96 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Save Admin Credentials</title>
-</head>
-<body>
-
-  <h1>Save Admin Credentials</h1>
-  <button onclick="saveAdminCredentials()">Save Admin Credentials</button>
-
+  <title>Firebase CRUD Operations</title>
   <script type="module">
+    // Import Firebase modules
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
-    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+    import { getFirestore, doc, setDoc, getDoc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
 
-    // Firebase configuration
+    // Your Firebase configuration
     const firebaseConfig = {
-      apiKey: "AIzaSyAXZgxM6PU-T3D2811KnBszblRWju7rv1Y",
-      authDomain: "dws-management.firebaseapp.com",
-      projectId: "dws-management",
-      storageBucket: "dws-management.appspot.com",
-      messagingSenderId: "23827231923",
-      appId: "1:23827231923:web:97141b6d19c7cd109d2cc6",
-      measurementId: "G-L14GLJDYW7"
-    };
+    apiKey: "AIzaSyAXZgxM6PU-T3D2811KnBszblRWju7rv1Y",
+    authDomain: "dws-management.firebaseapp.com",
+    projectId: "dws-management",
+    storageBucket: "dws-management.firebasestorage.app",
+    messagingSenderId: "23827231923",
+    appId: "1:23827231923:web:97141b6d19c7cd109d2cc6",
+    measurementId: "G-L14GLJDYW7"
+  };
 
     // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // Function to save admin credentials
-    async function saveAdminCredentials() {
-      try {
-        // Firestore document reference
-        const adminDocRef = doc(db, 'users', 'admin');
-        
-        // Admin data
-        const adminData = {
-          username: 'admin',
-          password: 'admin123', // Plain text for testing; use hashing in production.
-          role: 'admin'
-        };
+    // Add data to Firestore
+    async function addData() {
+      const docRef = doc(db, "testCollection", "testDoc");
+      const data = {
+        name: document.getElementById("name").value,
+        email: document.getElementById("email").value,
+        timestamp: new Date()
+      };
 
-        // Write data to Firestore
-        await setDoc(adminDocRef, adminData);
+      await setDoc(docRef, data);
+      alert("Data added successfully!");
+    }
 
-        console.log("Admin credentials saved successfully.");
-        alert("Admin credentials saved successfully.");
-      } catch (error) {
-        console.error("Error saving admin credentials: ", error);
-        alert("Error saving admin credentials. Check the console for details.");
+    // Retrieve data from Firestore
+    async function getData() {
+      const docRef = doc(db, "testCollection", "testDoc");
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        document.getElementById("output").textContent = JSON.stringify(data, null, 2);
+      } else {
+        alert("No such document!");
       }
     }
-  </script>
 
+    // Update data in Firestore
+    async function updateData() {
+      const docRef = doc(db, "testCollection", "testDoc");
+      const updatedData = {
+        name: document.getElementById("name").value || "Updated Name",
+        email: document.getElementById("email").value || "updated.email@example.com"
+      };
+
+      await updateDoc(docRef, updatedData);
+      alert("Data updated successfully!");
+    }
+
+    // Delete data from Firestore
+    async function deleteData() {
+      const docRef = doc(db, "testCollection", "testDoc");
+      await deleteDoc(docRef);
+      alert("Document deleted successfully!");
+    }
+
+    // Expose functions to global scope
+    window.addData = addData;
+    window.getData = getData;
+    window.updateData = updateData;
+    window.deleteData = deleteData;
+  </script>
+</head>
+<body>
+  <h1>Firebase CRUD Test</h1>
+  <div>
+    <label for="name">Name:</label>
+    <input type="text" id="name" placeholder="Enter name" />
+  </div>
+  <div>
+    <label for="email">Email:</label>
+    <input type="email" id="email" placeholder="Enter email" />
+  </div>
+  <div>
+    <button onclick="addData()">Add Data</button>
+    <button onclick="getData()">Get Data</button>
+    <button onclick="updateData()">Update Data</button>
+    <button onclick="deleteData()">Delete Data</button>
+  </div>
+  <h3>Output:</h3>
+  <pre id="output"></pre>
 </body>
 </html>
