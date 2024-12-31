@@ -4,61 +4,52 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Dashboard - DWS Management</title>
+
+  <!-- Google Material Icons -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-auth.js"></script>
+
   <style>
     body {
       font-family: Arial, sans-serif;
       background-color: #f4f4f9;
       margin: 0;
       padding: 0;
-    }
-
-    header {
-      background-color: #4CAF50;
-      color: white;
-      padding: 15px;
-      text-align: center;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
     }
 
     .container {
-      padding: 20px;
-    }
-
-    .dashboard {
-      display: flex;
-      justify-content: space-around;
-      margin-bottom: 20px;
-    }
-
-    .card {
       background-color: white;
-      border-radius: 5px;
+      padding: 40px;
+      border-radius: 10px;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      padding: 20px;
-      width: 200px;
+      max-width: 600px;
+      width: 100%;
       text-align: center;
     }
 
-    .card h3 {
-      margin: 0;
+    h1 {
+      margin-bottom: 20px;
       font-size: 24px;
-    }
-
-    .card p {
-      font-size: 18px;
-      color: #666;
+      color: #333;
     }
 
     .btn {
-      padding: 12px 24px;
+      width: 100%;
+      padding: 12px;
       background-color: #4CAF50;
       color: white;
       border: none;
       border-radius: 5px;
       cursor: pointer;
       font-size: 16px;
-      display: block;
-      margin: 10px 0;
     }
 
     .btn:hover {
@@ -66,88 +57,56 @@
     }
 
     .user-list {
-      margin-top: 30px;
-    }
-
-    .user-list table {
-      width: 100%;
-      border-collapse: collapse;
       margin-top: 20px;
+      text-align: left;
     }
 
-    .user-list table, th, td {
-      border: 1px solid #ddd;
-    }
-
-    .user-list th, td {
+    .user-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
       padding: 10px;
-      text-align: center;
-    }
-    
-    .user-list th {
-      background-color: #4CAF50;
-      color: white;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      background-color: #f9f9f9;
     }
 
-    .logout-btn {
-      background-color: #f44336;
-      color: white;
+    .status {
+      font-size: 14px;
+      margin-top: 10px;
     }
 
-    .logout-btn:hover {
-      background-color: #e53935;
+    .error {
+      color: red;
+    }
+
+    .success {
+      color: green;
+    }
+
+    .material-icons {
+      font-size: 24px;
+      color: #4CAF50;
     }
   </style>
 </head>
 <body>
-
-  <header>
-    <h1>Admin Dashboard - DWS Management</h1>
-  </header>
-
   <div class="container">
-    <div class="dashboard">
-      <div class="card">
-        <h3>Active Users</h3>
-        <p>45</p>
-      </div>
-      <div class="card">
-        <h3>DWS Created</h3>
-        <p>123</p>
-      </div>
-      <div class="card">
-        <h3>Upcoming Tasks</h3>
-        <p>5</p>
-      </div>
+    <h1>Admin Dashboard</h1>
+    <button class="btn" id="google-sign-in">Sign In with Google</button>
+
+    <div class="user-list" id="user-list">
+      <!-- User list will be populated here -->
     </div>
 
-    <button class="btn" id="manage-users-btn">Manage Users</button>
-    <button class="btn" id="manage-dws-btn">Manage DWS</button>
-
-    <!-- User Management Section -->
-    <div class="user-list">
-      <h2>Registered Users</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Email</th>
-            <th>Role</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody id="user-table-body">
-          <!-- Dynamically generated rows will go here -->
-        </tbody>
-      </table>
-    </div>
-
-    <button class="btn logout-btn" id="logout-btn">Logout</button>
+    <p id="status" class="status"></p>
   </div>
 
   <script type="module">
-    import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-auth.js";
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-app.js";
-    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-firestore.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, sendEmailVerification, updateProfile } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-auth.js";
+    import { getFirestore, collection, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-firestore.js";
 
     // Firebase configuration
     const firebaseConfig = {
@@ -163,43 +122,68 @@
     // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const auth = getAuth();
-    const db = getFirestore();
+    const db = getFirestore(app);
 
-    // Check if the user is logged in and has admin role
-    auth.onAuthStateChanged(async (user) => {
-      if (user) {
-        // If the user is an admin (check the role)
-        // You can store user role in Firestore or Firebase Authentication (Custom Claims)
-        // Example: user.email === "admin@dws.com"
-        if (user.email === "admin@dws.com") {
-          // Fetch users from Firestore and populate the table
-          const usersSnapshot = await getDocs(collection(db, "users"));
-          const userTableBody = document.getElementById("user-table-body");
-          
-          usersSnapshot.forEach((doc) => {
-            const userData = doc.data();
-            const row = document.createElement("tr");
-            row.innerHTML = `
-              <td>${userData.email}</td>
-              <td>${userData.role}</td>
-              <td><button class="btn">View</button></td>
-            `;
-            userTableBody.appendChild(row);
-          });
-        } else {
-          alert("You are not authorized to access this page.");
-          window.location.href = "index.html"; // Redirect to login if not an admin
-        }
-      } else {
-        window.location.href = "index.html"; // Redirect to login page
+    const googleSignInBtn = document.getElementById('google-sign-in');
+    const userList = document.getElementById('user-list');
+    const status = document.getElementById('status');
+
+    // Google Sign-In
+    googleSignInBtn.addEventListener('click', async () => {
+      const provider = new GoogleAuthProvider();
+      try {
+        const result = await signInWithPopup(auth, provider);
+        const user = result.user;
+        status.innerText = `Signed in as ${user.displayName}`;
+        status.className = "success";
+        fetchUsers();  // Fetch users after signing in
+      } catch (error) {
+        status.innerText = `Error: ${error.message}`;
+        status.className = "error";
       }
     });
 
-    // Logout
-    document.getElementById("logout-btn").addEventListener("click", () => {
-      signOut(auth).then(() => {
-        window.location.href = "index.html"; // Redirect to login page
+    // Fetch users from Firestore
+    async function fetchUsers() {
+      const usersSnapshot = await getDocs(collection(db, "users"));
+      userList.innerHTML = '';  // Clear current list
+
+      usersSnapshot.forEach((doc) => {
+        const userData = doc.data();
+        const userItem = document.createElement('div');
+        userItem.classList.add('user-item');
+        userItem.innerHTML = `
+          <div>
+            <strong>${userData.name}</strong><br>
+            ${userData.email} - ${userData.status}
+          </div>
+          <button class="btn" onclick="approveUser('${doc.id}')">Approve</button>
+        `;
+        userList.appendChild(userItem);
       });
+    }
+
+    // Admin approve user
+    async function approveUser(userId) {
+      const userDoc = doc(db, "users", userId);
+      try {
+        await updateDoc(userDoc, {
+          status: "Approved"
+        });
+        status.innerText = "User approved successfully!";
+        status.className = "success";
+        fetchUsers();  // Refresh user list
+      } catch (error) {
+        status.innerText = `Error approving user: ${error.message}`;
+        status.className = "error";
+      }
+    }
+
+    // Listen for auth state changes (check if the admin is signed in)
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        fetchUsers();  // Fetch users if the admin is signed in
+      }
     });
   </script>
 </body>
