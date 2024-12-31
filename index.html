@@ -112,28 +112,33 @@
         <div id="adminDetails"></div>
     </div>
 
-    <script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAXZgxM6PU-T3D2811KnBszblRWju7rv1Y",
+            authDomain: "dws-management.firebaseapp.com",
+            databaseURL: "https://dws-management-default-rtdb.firebaseio.com",
+            projectId: "dws-management",
+            storageBucket: "dws-management.appspot.com",
+            messagingSenderId: "23827231923",
+            appId: "1:23827231923:web:97141b6d19c7cd109d2cc6",
+            measurementId: "G-L14GLJDYW7"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
         // Toggle Dark/Light Mode
         window.toggleTheme = function () {
             document.body.classList.toggle("dark-mode");
         };
 
-        // Store admin credentials in localStorage
-        function initializeAdminDetails() {
-            const adminDetails = {
-                email: "admin@dws.com",
-                password: "admin123"
-            };
-            localStorage.setItem("adminCredentials", JSON.stringify(adminDetails));
-        }
-
-        // Initialize admin credentials if not already present
-        if (!localStorage.getItem("adminCredentials")) {
-            initializeAdminDetails();
-        }
-
         // Login Function
-        function login() {
+        async function login() {
             const email = document.getElementById("email").value.trim();
             const password = document.getElementById("password").value.trim();
 
@@ -142,25 +147,44 @@
                 return;
             }
 
-            const adminDetails = JSON.parse(localStorage.getItem("adminCredentials"));
+            try {
+                const adminRef = doc(db, "admin", "adminCredentials");
+                const adminDoc = await getDoc(adminRef);
 
-            // Check if the login credentials match admin credentials
-            if (email === adminDetails.email && password === adminDetails.password) {
-                window.location.href = "admin.html"; // Redirect to admin page
-            } else {
-                alert("Invalid credentials.");
+                if (adminDoc.exists()) {
+                    const adminData = adminDoc.data();
+                    if (email === adminData.email && password === adminData.password) {
+                        window.location.href = "admin.html";
+                    } else {
+                        alert("Invalid credentials.");
+                    }
+                } else {
+                    alert("Admin data not found.");
+                }
+            } catch (error) {
+                console.error("Error fetching admin data: ", error);
+                alert("An error occurred while fetching admin details.");
             }
         }
 
         // Fetch and display admin details
-        function getAdminDetails() {
+        async function getAdminDetails() {
             const adminDetailsDiv = document.getElementById("adminDetails");
-            const adminDetails = JSON.parse(localStorage.getItem("adminCredentials"));
+            adminDetailsDiv.textContent = "Fetching admin details...";
 
-            if (adminDetails) {
-                adminDetailsDiv.textContent = `Admin Email: ${adminDetails.email}, Admin Password: ${adminDetails.password}`;
-            } else {
-                adminDetailsDiv.textContent = "No admin details found.";
+            try {
+                const adminRef = doc(db, "admin", "adminCredentials");
+                const adminDoc = await getDoc(adminRef);
+
+                if (adminDoc.exists()) {
+                    const adminData = adminDoc.data();
+                    adminDetailsDiv.textContent = `Admin Email: ${adminData.email}, Admin Password: ${adminData.password}`;
+                } else {
+                    adminDetailsDiv.textContent = "No admin details found.";
+                }
+            } catch (error) {
+                console.error("Error fetching admin details: ", error);
+                adminDetailsDiv.textContent = "Error fetching admin details.";
             }
         }
     </script>
