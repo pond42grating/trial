@@ -3,20 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - DWS Management</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Save Admin Data</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
             background-color: #f4f4f9;
-            transition: background-color 0.3s ease;
-        }
-
-        .dark-mode {
-            background-color: #333;
-            color: white;
         }
 
         .container {
@@ -26,10 +19,6 @@
             padding: 30px;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .dark-mode .container {
-            background-color: #444;
         }
 
         h2 {
@@ -57,141 +46,51 @@
         .button:hover {
             background-color: #45a049;
         }
-
-        .remember-me {
-            display: flex;
-            align-items: center;
-            margin: 10px 0;
-        }
-
-        .remember-me input {
-            margin-right: 5px;
-        }
-
-        .toggle-theme {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            cursor: pointer;
-        }
-
-        .link {
-            display: block;
-            text-align: center;
-            margin-top: 15px;
-            color: #4CAF50;
-            text-decoration: none;
-        }
-
-        .link:hover {
-            text-decoration: underline;
-        }
     </style>
 </head>
 <body>
 
-    <div class="toggle-theme" onclick="toggleTheme()">🌙</div>
     <div class="container">
-        <h2>Login to DWS</h2>
+        <h2>Admin Data</h2>
 
-        <input type="email" id="email" class="input-field" placeholder="Email" required>
-        <input type="password" id="password" class="input-field" placeholder="Password" required>
-        <div class="remember-me">
-            <input type="checkbox" id="rememberMe">
-            <label for="rememberMe">Remember Me</label>
-        </div>
-
-        <button class="button" onclick="login()">Login</button>
-
-        <p class="link"><a href="signup.html">Sign Up</a></p>
-        <p class="link"><a href="forget.html">Forgot Password?</a></p>
-
-        <button class="button" onclick="saveAdminData()">Save Admin Data</button> <!-- Button to save admin data -->
+        <button class="button" onclick="saveAdminData()">Save Admin Data</button>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-firestore.js"></script>
 
     <script>
         // Firebase configuration
         const firebaseConfig = {
-    apiKey: "AIzaSyAXZgxM6PU-T3D2811KnBszblRWju7rv1Y",
-    authDomain: "dws-management.firebaseapp.com",
-    projectId: "dws-management",
-    storageBucket: "dws-management.firebasestorage.app",
-    messagingSenderId: "23827231923",
-    appId: "1:23827231923:web:97141b6d19c7cd109d2cc6",
-    measurementId: "G-L14GLJDYW7"
-  };
+            apiKey: "AIzaSyAXZgxM6PU-T3D2811KnBszblRWju7rv1Y",
+            authDomain: "dws-management.firebaseapp.com",
+            projectId: "dws-management",
+            storageBucket: "dws-management.firebasestorage.app",
+            messagingSenderId: "23827231923",
+            appId: "1:23827231923:web:97141b6d19c7cd109d2cc6",
+            measurementId: "G-L14GLJDYW7"
+        };
 
         // Initialize Firebase
         const app = firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
         const db = firebase.firestore();
 
-        // Toggle Dark/Light Mode
-        function toggleTheme() {
-            document.body.classList.toggle("dark-mode");
-        }
-
-        // Login function
-        function login() {
-            const email = document.getElementById("email").value;
-            const password = document.getElementById("password").value;
-            const rememberMe = document.getElementById("rememberMe").checked;
-
-            if (!email || !password) {
-                alert("Please enter both email and password.");
-                return;
-            }
-
-            auth.signInWithEmailAndPassword(email, password)
-                .then(userCredential => {
-                    const user = userCredential.user;
-                    if (rememberMe) {
-                        localStorage.setItem("user", JSON.stringify(user));
-                    }
-
-                    // Fetch admin data from Firestore to check credentials
-                    db.collection("admin").doc("adminCredentials").get()
-                        .then(doc => {
-                            if (doc.exists) {
-                                const adminData = doc.data();
-                                const adminEmail = adminData.email;
-                                const adminPassword = adminData.password;
-
-                                if (email === adminEmail && password === adminPassword) {
-                                    window.location.href = "admin.html"; // Admin page
-                                } else {
-                                    window.location.href = "dashboard.html"; // Regular user dashboard
-                                }
-                            } else {
-                                alert("Admin data not found.");
-                            }
-                        })
-                        .catch(error => {
-                            alert("Error fetching admin data.");
-                        });
-                })
-                .catch(error => {
-                    alert("Error: " + error.message);
-                });
-        }
-
-        // Save Admin Data to Firestore (used temporarily for testing)
+        // Function to save admin data
         function saveAdminData() {
-            db.collection("admin").doc("adminCredentials").set({
+            const adminData = {
                 email: "admin@dws.com",
                 password: "admin123"
-            })
-            .then(() => {
-                alert("Admin data saved successfully!");
-            })
-            .catch((error) => {
-                console.error("Error saving admin data:", error);
-                alert("Failed to save admin data.");
-            });
+            };
+
+            // Save data to Firestore
+            db.collection("admin").doc("adminCredentials").set(adminData)
+                .then(() => {
+                    alert("Admin data saved successfully!");
+                })
+                .catch((error) => {
+                    console.error("Error saving admin data:", error);
+                    alert("Failed to save admin data.");
+                });
         }
     </script>
 
