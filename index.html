@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Data Firestore</title>
+  <title>Admin Data Management</title>
   <script type="module">
-    // Import Firebase
+    // Import Firebase functions
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
     import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
 
@@ -24,31 +24,24 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // Function to add admin details to Firestore
+    // Function to add admin data to Firestore
     async function addAdminData() {
-      const adminId = document.getElementById('adminId').value;
-      const adminPassword = document.getElementById('adminPassword').value;
-
-      if (adminId && adminPassword) {
-        const docRef = doc(db, "Admin", "Details"); // Store in /Admin/Details
-        await setDoc(docRef, {
-          id: adminId,
-          password: adminPassword
-        });
-        alert("Admin data added successfully!");
-      } else {
-        alert("Please provide both Admin ID and Password.");
-      }
+      const adminRef = doc(db, "admin", "adminCredentials"); // Path: /admin/adminCredentials
+      await setDoc(adminRef, {
+        email: "admin@dws.com", // Admin email
+        password: "admin123" // Admin password
+      });
+      alert("Admin data added successfully!");
     }
 
-    // Function to retrieve admin details from Firestore
+    // Function to retrieve admin data from Firestore
     async function getAdminData() {
-      const docRef = doc(db, "Admin", "Details"); // Fetch from /Admin/Details
-      const docSnap = await getDoc(docRef);
+      const adminRef = doc(db, "admin", "adminCredentials"); // Path: /admin/adminCredentials
+      const docSnap = await getDoc(adminRef);
 
       if (docSnap.exists()) {
         const adminData = docSnap.data();
-        alert("Admin ID: " + adminData.id + ", Password: " + adminData.password);
+        alert("Admin Data: \nEmail: " + adminData.email + "\nPassword: " + adminData.password);
       } else {
         alert("No admin data found!");
       }
@@ -60,13 +53,7 @@
   </script>
 </head>
 <body>
-  <h1>Admin Data Firestore</h1>
-
-  <!-- Input fields for Admin details -->
-  <input type="text" id="adminId" placeholder="Enter Admin ID" />
-  <input type="password" id="adminPassword" placeholder="Enter Admin Password" />
-
-  <!-- Buttons for CRUD operations -->
+  <h1>Admin Data Management</h1>
   <button onclick="addAdminData()">Add Admin Data</button>
   <button onclick="getAdminData()">Get Admin Data</button>
 </body>
