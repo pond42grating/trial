@@ -3,10 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Forgot Password - DWS Management</title>
+  <title>Login - DWS Management</title>
   <script type="module">
+    // Import Firebase
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
-    import { getAuth, sendPasswordResetEmail, fetchSignInMethodsForEmail } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
+    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
 
     // Firebase configuration
     const firebaseConfig = {
@@ -22,36 +24,53 @@
     // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
+    const db = getFirestore(app);
 
-    // Forgot password function
-    async function forgotPassword() {
+    // Login Function
+    async function login() {
       const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
 
-      if (!email) {
-        alert("Please enter your email.");
+      if (!email || !password) {
+        alert("Please enter both email and password.");
         return;
       }
 
       try {
-        // Check if the email is registered in Firebase Authentication
-        const signInMethods = await fetchSignInMethodsForEmail(auth, email);
+        // Sign in the user with Firebase Authentication
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
 
-        // If no sign-in methods are found, the email is not registered
-        if (signInMethods.length === 0) {
-          alert("Account does not exist.");
+        // Fetch admin details from Firestore to check if the user is an admin (if needed)
+        const adminRef = doc(db, "Admin", "Details");
+        const adminDoc = await getDoc(adminRef);
+
+        if (adminDoc.exists()) {
+          const adminData = adminDoc.data();
+          // Check if the user matches admin credentials
+          if (email === adminData.id && password === adminData.password) {
+            window.location.href = "admin.html"; // Redirect to admin page
+          } else {
+            alert("Invalid credentials.");
+          }
         } else {
-          // Send password reset email
-          await sendPasswordResetEmail(auth, email);
-          alert("Password reset email sent. Please check your inbox.");
+          alert("Admin data not found.");
         }
       } catch (error) {
-        console.error("Error sending password reset email: ", error);
-        alert("An error occurred: " + error.message);
+        console.error("Error during login: ", error);
+        alert("Error: " + error.message);
       }
     }
 
-    // Expose function to global scope
-    window.forgotPassword = forgotPassword;
+    // Toggle theme (dark/light mode)
+    function toggleTheme() {
+      const body = document.body;
+      body.classList.toggle("dark-mode");
+    }
+
+    // Export functions to global scope for HTML buttons
+    window.login = login;
+    window.toggleTheme = toggleTheme;
   </script>
 
   <style>
@@ -63,6 +82,11 @@
       transition: background-color 0.3s ease;
     }
 
+    .dark-mode {
+      background-color: #333;
+      color: white;
+    }
+
     .container {
       max-width: 400px;
       margin: 50px auto;
@@ -70,6 +94,10 @@
       padding: 30px;
       border-radius: 10px;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .dark-mode .container {
+      background-color: #444;
     }
 
     h2 {
@@ -98,6 +126,23 @@
       background-color: #45a049;
     }
 
+    .remember-me {
+      display: flex;
+      align-items: center;
+      margin: 10px 0;
+    }
+
+    .remember-me input {
+      margin-right: 5px;
+    }
+
+    .toggle-theme {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      cursor: pointer;
+    }
+
     .link {
       display: block;
       text-align: center;
@@ -113,11 +158,18 @@
 </head>
 
 <body>
+  <div class="toggle-theme" onclick="toggleTheme()">🌙</div>
   <div class="container">
-    <h2>Forgot Password</h2>
-    <input type="email" id="email" class="input-field" placeholder="Enter your email" required>
-    <button class="button" onclick="forgotPassword()">Submit</button>
-    <p class="link"><a href="index.html">Back to Login</a></p>
+    <h2>Login to DWS</h2>
+    <input type="email" id="email" class="input-field" placeholder="Email" required>
+    <input type="password" id="password" class="input-field" placeholder="Password" required>
+    <div class="remember-me">
+      <input type="checkbox" id="rememberMe">
+      <label for="rememberMe">Remember Me</label>
+    </div>
+    <button class="button" onclick="login()">Login</button>
+    <p class="link"><a href="signup.html">Sign Up</a></p>
+    <p class="link"><a href="forget.html">Forgot Password?</a></p>
   </div>
 </body>
 </html>
