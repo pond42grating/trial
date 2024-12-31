@@ -19,7 +19,7 @@
       apiKey: "AIzaSyAXZgxM6PU-T3D2811KnBszblRWju7rv1Y",
       authDomain: "dws-management.firebaseapp.com",
       projectId: "dws-management",
-      storageBucket: "dws-management.firebasestorage.app",
+      storageBucket: "dws-management.appspot.com",
       messagingSenderId: "23827231923",
       appId: "1:23827231923:web:97141b6d19c7cd109d2cc6",
       measurementId: "G-L14GLJDYW7"
@@ -30,29 +30,28 @@
     const db = getFirestore(app);
 
     // Function to save admin credentials
-    const saveAdminCredentials = async () => {
+    async function saveAdminCredentials() {
       try {
-        // Reference to the admin document in Firestore
+        // Firestore document reference
         const adminDocRef = doc(db, 'users', 'admin');
         
-        // Admin data to be saved
+        // Admin data
         const adminData = {
           username: 'admin',
-          password: 'admin123',  // For simplicity, you can hash the password in production
+          password: 'admin123', // Plain text for testing; use hashing in production.
           role: 'admin'
         };
-        
-        // Saving the admin data in Firestore
-        console.log('Saving admin credentials...');
+
+        // Write data to Firestore
         await setDoc(adminDocRef, adminData);
-        console.log('Admin credentials saved successfully!');
-        
-        alert("Admin credentials saved successfully!");
+
+        console.log("Admin credentials saved successfully.");
+        alert("Admin credentials saved successfully.");
       } catch (error) {
         console.error("Error saving admin credentials: ", error);
-        alert("Error saving admin credentials.");
+        alert("Error saving admin credentials. Check the console for details.");
       }
-    };
+    }
   </script>
 
 </body>
