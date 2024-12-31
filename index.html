@@ -6,7 +6,7 @@
   <title>Forgot Password - DWS Management</title>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
-    import { getAuth, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
+    import { getAuth, fetchSignInMethodsForEmail, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
 
     // Firebase configuration
     const firebaseConfig = {
@@ -23,8 +23,8 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
 
-    // Function to send password reset email
-    async function resetPassword() {
+    // Function to verify user and reset password
+    async function verifyAndResetPassword() {
       const email = document.getElementById("email").value.trim();
 
       if (!email) {
@@ -33,16 +33,24 @@
       }
 
       try {
+        // Verify if the user exists
+        const signInMethods = await fetchSignInMethodsForEmail(auth, email);
+        if (signInMethods.length === 0) {
+          alert("No account found with this email. Please sign up first.");
+          return;
+        }
+
+        // Send password reset email
         await sendPasswordResetEmail(auth, email);
         alert("Password reset email sent! Please check your inbox.");
       } catch (error) {
-        console.error("Password reset error: ", error);
+        console.error("Error during password reset: ", error);
         alert("Error: " + error.message);
       }
     }
 
     // Expose the function globally
-    window.resetPassword = resetPassword;
+    window.verifyAndResetPassword = verifyAndResetPassword;
   </script>
 
   <style>
@@ -98,7 +106,7 @@
   <div class="container">
     <h2>Forgot Password</h2>
     <input type="email" id="email" class="input-field" placeholder="Enter your email" required>
-    <button class="button" onclick="resetPassword()">Reset Password</button>
+    <button class="button" onclick="verifyAndResetPassword()">Reset Password</button>
   </div>
 </body>
 </html>
