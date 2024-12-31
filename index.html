@@ -3,10 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Forgot Password - DWS Management</title>
+  <title>Forget Password - DWS Management</title>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
-    import { getAuth, fetchSignInMethodsForEmail, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
+    import { getAuth, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
 
     // Firebase configuration
     const firebaseConfig = {
@@ -22,26 +23,29 @@
     // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
+    const db = getFirestore(app);
 
-    // Function to reset password
-    async function resetPassword() {
+    // Forget Password Function
+    async function forgetPassword() {
       const email = document.getElementById("email").value.trim();
 
       if (!email) {
-        alert("Please enter your email.");
+        alert("Please enter your email address.");
         return;
       }
 
       try {
-        // Check if the user exists
-        const methods = await fetchSignInMethodsForEmail(auth, email);
-        if (methods.length > 0) {
-          // User exists, send password reset email
+        // Check if email exists in Firestore
+        const usersRef = doc(db, "Users", email);
+        const userDoc = await getDoc(usersRef);
+
+        if (userDoc.exists()) {
+          // Send password reset email
           await sendPasswordResetEmail(auth, email);
-          alert("Password reset email sent! Please check your inbox.");
+          alert("A password reset email has been sent to your email address.");
           window.location.href = "index.html";
         } else {
-          alert("Account does not exist. Please sign up first.");
+          alert("Account does not exist. Please sign up.");
         }
       } catch (error) {
         console.error("Error during password reset: ", error);
@@ -49,8 +53,8 @@
       }
     }
 
-    // Expose functions globally
-    window.resetPassword = resetPassword;
+    // Expose the function globally
+    window.forgetPassword = forgetPassword;
   </script>
 
   <!-- Include Google Material Icons -->
@@ -87,24 +91,6 @@
       margin: 10px 0;
       border: 1px solid #ddd;
       border-radius: 5px;
-      position: relative;
-    }
-
-    .input-container {
-      display: flex;
-      align-items: center;
-      position: relative;
-    }
-
-    .input-container input {
-      flex: 1;
-    }
-
-    .input-container .material-icons {
-      position: absolute;
-      right: 10px;
-      cursor: pointer;
-      color: #888;
     }
 
     .button {
@@ -137,12 +123,9 @@
 
 <body>
   <div class="container">
-    <h2>Forgot Password</h2>
-    <div class="input-container">
-      <input type="email" id="email" class="input-field" placeholder="Enter your registered email" required>
-      <span class="material-icons">email</span>
-    </div>
-    <button class="button" onclick="resetPassword()">Reset Password</button>
+    <h2>Forget Password</h2>
+    <input type="email" id="email" class="input-field" placeholder="Enter your registered email" required>
+    <button class="button" onclick="forgetPassword()">Reset Password</button>
     <p class="link"><a href="index.html">Back to Login</a></p>
   </div>
 </body>
