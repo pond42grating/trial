@@ -3,11 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Email Verification</title>
+  <title>Sign Up - DWS Management</title>
   <script type="module">
-    // Import Firebase
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
-    import { getAuth, createUserWithEmailAndPassword, sendEmailVerification, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
+    import { getAuth, createUserWithEmailAndPassword, sendEmailVerification } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
 
     // Firebase configuration
     const firebaseConfig = {
@@ -24,13 +23,13 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
 
-    // Register a new user and send email verification
+    // Function to register and send verification email
     async function registerAndVerify() {
       const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value.trim();
 
       if (!email || !password) {
-        alert("Please enter both email and password.");
+        alert("Please fill out all fields.");
         return;
       }
 
@@ -39,54 +38,26 @@
         const user = userCredential.user;
 
         await sendEmailVerification(user);
-        alert("Verification email sent. Please check your inbox.");
-
+        alert("Verification email sent! Please check your inbox.");
       } catch (error) {
-        console.error("Error during registration: ", error);
+        console.error("Sign up error: ", error);
         alert("Error: " + error.message);
       }
     }
 
-    // Verify user status after login
-    async function verifyUser() {
-      const email = document.getElementById("loginEmail").value.trim();
-      const password = document.getElementById("loginPassword").value.trim();
-
-      if (!email || !password) {
-        alert("Please enter both email and password.");
-        return;
-      }
-
-      try {
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
-
-        if (user.emailVerified) {
-          alert("You are verified!");
-        } else {
-          alert("Please verify your email before proceeding.");
-        }
-      } catch (error) {
-        console.error("Error during login: ", error);
-        alert("Error: " + error.message);
-      }
-    }
-
-    // Export functions to global scope
+    // Expose the function globally
     window.registerAndVerify = registerAndVerify;
-    window.verifyUser = verifyUser;
   </script>
 
   <style>
     body {
       font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
       background-color: #f4f6f9;
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
+      margin: 0;
     }
 
     .container {
@@ -94,8 +65,8 @@
       padding: 30px;
       border-radius: 10px;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      width: 100%;
       max-width: 400px;
+      width: 100%;
     }
 
     h2 {
@@ -105,21 +76,20 @@
 
     .input-field {
       width: 100%;
-      padding: 12px;
+      padding: 10px;
       margin: 10px 0;
-      border-radius: 5px;
       border: 1px solid #ddd;
+      border-radius: 5px;
     }
 
     .button {
       width: 100%;
-      padding: 12px;
+      padding: 10px;
       background-color: #4CAF50;
       color: white;
       border: none;
       border-radius: 5px;
       cursor: pointer;
-      margin-top: 10px;
     }
 
     .button:hover {
@@ -130,17 +100,10 @@
 
 <body>
   <div class="container">
-    <h2>Register & Verify</h2>
+    <h2>Sign Up</h2>
     <input type="email" id="email" class="input-field" placeholder="Enter your email" required>
     <input type="password" id="password" class="input-field" placeholder="Enter your password" required>
-    <button class="button" onclick="registerAndVerify()">Register & Send Verification Email</button>
-  </div>
-
-  <div class="container" style="margin-top: 20px;">
-    <h2>Verify After Login</h2>
-    <input type="email" id="loginEmail" class="input-field" placeholder="Enter your email" required>
-    <input type="password" id="loginPassword" class="input-field" placeholder="Enter your password" required>
-    <button class="button" onclick="verifyUser()">Login & Verify</button>
+    <button class="button" onclick="registerAndVerify()">Sign Up</button>
   </div>
 </body>
 </html>
