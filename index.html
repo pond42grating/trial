@@ -3,185 +3,86 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - DWS Management</title>
+    <title>Test Admin Data</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f9fafb;
-            color: #333;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-
-        .container {
-            background-color: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            width: 350px;
+            background-color: #f4f4f9;
+            padding: 20px;
             text-align: center;
         }
 
-        h2 {
-            margin-bottom: 20px;
-        }
-
-        .input-field {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
-        }
-
-        .button {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
+        button {
+            background-color: #2196F3;
+            color: white;
+            padding: 10px 20px;
             border: none;
             border-radius: 5px;
-            background-color: #4CAF50;
-            color: white;
-            font-size: 16px;
             cursor: pointer;
         }
 
-        .button:hover {
-            background-color: #45a049;
+        button:hover {
+            background-color: #1976D2;
         }
 
-        .small-button {
-            font-size: 14px;
-            background-color: transparent;
-            border: none;
-            color: #4CAF50;
-            cursor: pointer;
-        }
-
-        .small-button:hover {
-            text-decoration: underline;
-        }
-
-        .toggle-password {
-            position: absolute;
-            right: 20px;
-            top: 58px;
-            cursor: pointer;
-            color: #888;
-        }
-
-        .dark-mode {
-            background-color: #333;
-            color: white;
+        .result {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>Login</h2>
-    <input type="text" id="username" class="input-field" placeholder="Username">
-    <div style="position: relative;">
-        <input type="password" id="password" class="input-field" placeholder="Password">
-        <span class="toggle-password" onclick="togglePassword()">👁️</span>
-    </div>
-    <label>
-        <input type="checkbox" id="rememberMe"> Remember Me
-    </label>
-    <button class="button" onclick="login()">Login</button>
-    <button class="small-button" onclick="location.href='signup.html'">Sign Up</button>
-    <button class="small-button" onclick="location.href='forget.html'">Forgot Password?</button>
-    <button class="small-button" onclick="toggleDarkMode()">Toggle Dark/Light Mode</button>
-    <hr>
-    <button class="button" onclick="testAdminData()">Test Admin Data</button>
-</div>
+    <h1>Admin Data Test</h1>
+    <button onclick="testAdminData()">Fetch Admin Data</button>
 
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
-    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+    <div id="result" class="result"></div>
 
-    const firebaseConfig = {
-    apiKey: "AIzaSyAXZgxM6PU-T3D2811KnBszblRWju7rv1Y",
-    authDomain: "dws-management.firebaseapp.com",
-    projectId: "dws-management",
-    storageBucket: "dws-management.firebasestorage.app",
-    messagingSenderId: "23827231923",
-    appId: "1:23827231923:web:97141b6d19c7cd109d2cc6",
-    measurementId: "G-L14GLJDYW7"
-  };
-    
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+    <script type="module">
+        // Import Firebase app and Firestore
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
 
-    function togglePassword() {
-        const passwordField = document.getElementById("password");
-        if (passwordField.type === "password") {
-            passwordField.type = "text";
-        } else {
-            passwordField.type = "password";
-        }
-    }
+        // Firebase config (replace with your actual Firebase project config)
+        const firebaseConfig = {
+            apiKey: "AIzaSyAXZgxM6PU-T3D2811KnBszblRWju7rv1Y",
+            authDomain: "dws-management.firebaseapp.com",
+            projectId: "dws-management",
+            storageBucket: "dws-management.firebasestorage.app",
+            messagingSenderId: "23827231923",
+            appId: "1:23827231923:web:97141b6d19c7cd109d2cc6",
+            measurementId: "G-L14GLJDYW7"
+        };
 
-    function toggleDarkMode() {
-        document.body.classList.toggle("dark-mode");
-    }
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
 
-    async function login() {
-        const username = document.getElementById("username").value.trim();
-        const password = document.getElementById("password").value.trim();
+        // Function to fetch admin data
+        async function testAdminData() {
+            try {
+                const docRef = doc(db, "Users", "admin");  // Reference to the admin document in the "Users" collection
+                const docSnap = await getDoc(docRef);
 
-        if (!username || !password) {
-            alert("Please fill in all fields!");
-            return;
-        }
-
-        try {
-            // Fetch user data from Firestore
-            const userDoc = await getDoc(doc(db, "Users", username));
-
-            if (!userDoc.exists()) {
-                alert("Username not registered!");
-                return;
-            }
-
-            const userData = userDoc.data();
-
-            if (userData.password === password) {
-                if (userData.role === "admin") {
-                    alert("Welcome, Admin!");
-                    window.location.href = "admin.html";
+                if (docSnap.exists()) {
+                    // Displaying the admin data
+                    const adminData = docSnap.data();
+                    document.getElementById("result").innerHTML = `
+                        <strong>Admin Data Found:</strong><br>
+                        Username: ${adminData.username}<br>
+                        Password: ${adminData.password}<br>
+                        Role: ${adminData.role}
+                    `;
                 } else {
-                    alert("Login successful!");
-                    window.location.href = "login.html";
+                    document.getElementById("result").innerHTML = "<strong>No admin data found!</strong>";
                 }
-            } else {
-                alert("Incorrect password!");
+            } catch (error) {
+                console.error("Error fetching admin data: ", error);
+                document.getElementById("result").innerHTML = "<strong>Error fetching admin data!</strong>";
             }
-        } catch (error) {
-            console.error("Error during login:", error);
-            alert("An error occurred during login. Please try again.");
         }
-    }
-
-    async function testAdminData() {
-        try {
-            const adminDoc = await getDoc(doc(db, "Users", "admin"));
-            if (adminDoc.exists()) {
-                console.log("Admin Data:", adminDoc.data());
-                alert(`Admin Data: ${JSON.stringify(adminDoc.data())}`);
-            } else {
-                alert("Admin data not found in Firestore.");
-            }
-        } catch (error) {
-            console.error("Error fetching admin data:", error);
-            alert("An error occurred while fetching admin data.");
-        }
-    }
-</script>
+    </script>
 
 </body>
 </html>
