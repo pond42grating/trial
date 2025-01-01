@@ -28,39 +28,42 @@
 
     // Login Function (Email and Password)
     async function login() {
-      const email = document.getElementById("email").value.trim();
-      const password = document.getElementById("password").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
 
-      if (!email || !password) {
-        alert("Please enter both email and password.");
-        return;
+  if (!email || !password) {
+    alert("Please enter both email and password.");
+    return;
+  }
+
+  try {
+    // Sign in the user with Firebase Authentication
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+
+    // Fetch admin details from Firestore to check if the user is an admin
+    const adminRef = doc(db, "Admin", "Details");
+    const adminDoc = await getDoc(adminRef);
+
+    if (adminDoc.exists()) {
+      const adminData = adminDoc.data();
+
+      // Check if the user matches admin credentials
+      if (email === adminData.id && password === adminData.password) {
+        window.location.href = "admin.html"; // Redirect to admin page
+      } else {
+        // Redirect normal user to login.html
+        alert("Welcome, user!");
+        window.location.href = "login.html";
       }
-
-      try {
-        // Sign in the user with Firebase Authentication
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
-
-        // Fetch admin details from Firestore to check if the user is an admin (if needed)
-        const adminRef = doc(db, "Admin", "Details");
-        const adminDoc = await getDoc(adminRef);
-
-        if (adminDoc.exists()) {
-          const adminData = adminDoc.data();
-          // Check if the user matches admin credentials
-          if (email === adminData.id && password === adminData.password) {
-            window.location.href = "admin.html"; // Redirect to admin page
-          } else {
-            alert("Invalid credentials.");
-          }
-        } else {
-          alert("Admin data not found.");
-        }
-      } catch (error) {
-        console.error("Error during login: ", error);
-        alert("Error: " + error.message);
-      }
+    } else {
+      alert("Admin data not found.");
     }
+  } catch (error) {
+    console.error("Error during login: ", error);
+    alert("Error: " + error.message);
+  }
+}
 
     // Google Sign-In Function
     async function googleLogin() {
