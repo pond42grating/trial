@@ -3,12 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login - DWS Management</title>
+  <title>Admin - DWS Management</title>
   <script type="module">
-    // Import Firebase
+    import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
 
     // Firebase configuration
     const firebaseConfig = {
@@ -24,212 +22,129 @@
     // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
-    const db = getFirestore(app);
 
-    // Login Function (Email and Password)
-    async function login() {
-  const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value.trim();
-
-  if (!email || !password) {
-    alert("Please enter both email and password.");
-    return;
-  }
-
-  try {
-    // Sign in the user with Firebase Authentication
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
-
-    // Fetch admin details from Firestore to check if the user is an admin
-    const adminRef = doc(db, "Admin", "Details");
-    const adminDoc = await getDoc(adminRef);
-
-    if (adminDoc.exists()) {
-      const adminData = adminDoc.data();
-
-      // Check if the user matches admin credentials
-      if (email === adminData.id && password === adminData.password) {
-        window.location.href = "admin.html"; // Redirect to admin page
-      } else {
-        // Redirect normal user to login.html
-        alert("Welcome, user!");
-        window.location.href = "login.html";
-      }
-    } else {
-      alert("Admin data not found.");
-    }
-  } catch (error) {
-    console.error("Error during login: ", error);
-    alert("Error: " + error.message);
-  }
-}
-
-    // Google Sign-In Function
-    async function googleLogin() {
-      const provider = new GoogleAuthProvider();
-
-      try {
-        const result = await signInWithPopup(auth, provider);
-        const user = result.user;
-        alert(`Welcome ${user.displayName}!`);
-        window.location.href = "admin.html"; // Redirect to admin page
-      } catch (error) {
-        console.error("Error during Google login: ", error);
-        alert("Error: " + error.message);
-      }
+    // Admin Logout Function
+    function logout() {
+      signOut(auth).then(() => {
+        window.location.href = "index.html"; // Redirect to login page after logging out
+      }).catch((error) => {
+        console.error("Error logging out:", error);
+      });
     }
 
-    // Toggle theme (dark/light mode)
-    function toggleTheme() {
-      document.body.classList.toggle('dark-mode');
-      if (document.body.classList.contains('dark-mode')) {
-        localStorage.setItem('theme', 'dark');
-      } else {
-        localStorage.setItem('theme', 'light');
-      }
-    }
-
-    // Apply the stored theme when the page loads
-    window.onload = function() {
-      const storedTheme = localStorage.getItem('theme');
-      if (storedTheme === 'dark') {
-        document.body.classList.add('dark-mode');
-      } else {
-        document.body.classList.remove('dark-mode');
-      }
-    };
-
-    window.login = login;
-    window.toggleTheme = toggleTheme;
-    window.googleLogin = googleLogin;
+    window.logout = logout;
   </script>
 
   <style>
-  body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #f4f4f9;
-    transition: background-color 0.3s ease, color 0.3s ease;
-    color: #333; /* Default text color */
-  }
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f9;
+    }
 
-  .dark-mode {
-    background-color: #333;
-    color: #fff;
-  }
+    .container {
+      max-width: 1200px;
+      margin: 50px auto;
+      padding: 20px;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
 
-  .container {
-    max-width: 400px;
-    margin: 50px auto;
-    background: white;
-    padding: 30px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    transition: background-color 0.3s ease, color 0.3s ease;
-  }
+    h1 {
+      text-align: center;
+      color: #4CAF50;
+    }
 
-  .dark-mode .container {
-    background-color: #444;
-    color: #fff;
-  }
+    .dashboard {
+      display: flex;
+      justify-content: space-around;
+      margin-bottom: 40px;
+    }
 
-  h2 {
-    text-align: center;
-  }
+    .card {
+      background-color: #fff;
+      border-radius: 10px;
+      padding: 20px;
+      width: 250px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
 
-  .input-field {
-    width: 100%;
-    padding: 12px;
-    margin: 10px 0;
-    border-radius: 5px;
-    border: 1px solid #ddd;
-  }
+    .card h3 {
+      margin-top: 0;
+    }
 
-  .button {
-    width: 100%;
-    padding: 12px;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
+    .button {
+      display: block;
+      margin: 20px auto;
+      padding: 12px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
 
-  .button:hover {
-    background-color: #45a049;
-  }
+    .button:hover {
+      background-color: #45a049;
+    }
 
-  .remember-me {
-    display: flex;
-    align-items: center;
-    margin: 10px 0;
-  }
+    .nav-link {
+      display: block;
+      margin-top: 15px;
+      color: #4CAF50;
+      text-decoration: none;
+      text-align: center;
+    }
 
-  .remember-me input {
-    margin-right: 5px;
-  }
+    .nav-link:hover {
+      text-decoration: underline;
+    }
 
-  .toggle-theme {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    cursor: pointer;
-  }
+    .logout-btn {
+      background-color: #f44336;
+    }
 
-  .link {
-    display: block;
-    text-align: center;
-    margin-top: 15px;
-    color: #4CAF50; /* Default link color */
-    text-decoration: none;
-    transition: color 0.3s ease;
-  }
-
-  .link:hover {
-    text-decoration: underline;
-  }
-
-  .dark-mode .link {
-    color: #57e4ff; /* Bright cyan for better visibility in dark mode */
-  }
-
-  .google-signin-btn {
-    width: 100%;
-    padding: 12px;
-    background-color: #4285F4;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    margin-top: 15px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-
-  .google-signin-btn:hover {
-    background-color: #357ae8;
-  }
-</style>
+    .logout-btn:hover {
+      background-color: #e53935;
+    }
+  </style>
 </head>
 
 <body>
-  <div class="toggle-theme" onclick="toggleTheme()">🌙</div>
   <div class="container">
-    <h2>Login to DWS</h2>
-    <input type="email" id="email" class="input-field" placeholder="Email" required>
-    <input type="password" id="password" class="input-field" placeholder="Password" required>
-    <div class="remember-me">
-      <input type="checkbox" id="rememberMe">
-      <label for="rememberMe">Remember Me</label>
-    </div>
-    <button class="button" onclick="login()">Login</button>
-    <p class="link"><a href="signup.html">Sign Up</a></p>
-    <p class="link"><a href="forget.html">Forgot Password?</a></p>
+    <h1>Admin Dashboard</h1>
 
-    <!-- Google Sign-In Button -->
-    <button class="google-signin-btn" onclick="googleLogin()">Sign in with Google</button>
+    <!-- Dashboard Overview -->
+    <div class="dashboard">
+      <div class="card">
+        <h3>Total DWS Entries</h3>
+        <p>10</p> <!-- Replace with dynamic data -->
+      </div>
+      <div class="card">
+        <h3>Total Users</h3>
+        <p>50</p> <!-- Replace with dynamic data -->
+      </div>
+      <div class="card">
+        <h3>Pending Tasks</h3>
+        <p>5</p> <!-- Replace with dynamic data -->
+      </div>
+    </div>
+
+    <!-- DWS Management -->
+    <button class="button" onclick="window.location.href='createDWS.html'">Create New DWS</button>
+    <button class="button" onclick="window.location.href='manageDWS.html'">View/Edit DWS</button>
+
+    <!-- User Management -->
+    <button class="button" onclick="window.location.href='manageUsers.html'">Manage Users</button>
+
+    <!-- Admin Settings -->
+    <button class="button" onclick="window.location.href='adminSettings.html'">Admin Settings</button>
+
+    <!-- Logout -->
+    <button class="button logout-btn" onclick="logout()">Logout</button>
   </div>
 </body>
 </html>
