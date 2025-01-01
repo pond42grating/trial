@@ -106,102 +106,107 @@
   </script>
 
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      background-color: #f4f4f9;
-      transition: background-color 0.3s ease;
-    }
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f9;
+    transition: background-color 0.3s ease;
+  }
 
-    .dark-mode {
-      background-color: #333;
-      color: white;
-    }
+  .dark-mode {
+    background-color: #333;
+    color: white;
+  }
 
-    .container {
-      max-width: 400px;
-      margin: 50px auto;
-      background: white;
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    }
+  .container {
+    max-width: 400px;
+    margin: 50px auto;
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
 
-    .dark-mode .container {
-      background-color: #444;
-    }
+  .dark-mode .container {
+    background-color: #444;
+  }
 
-    h2 {
-      text-align: center;
-    }
+  h2 {
+    text-align: center;
+  }
 
-    .input-field {
-      width: 100%;
-      padding: 12px;
-      margin: 10px 0;
-      border-radius: 5px;
-      border: 1px solid #ddd;
-    }
+  .input-field {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+  }
 
-    .button {
-      width: 100%;
-      padding: 12px;
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
+  .button {
+    width: 100%;
+    padding: 12px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
 
-    .button:hover {
-      background-color: #45a049;
-    }
+  .button:hover {
+    background-color: #45a049;
+  }
 
-    .remember-me {
-      display: flex;
-      align-items: center;
-      margin: 10px 0;
-    }
+  .remember-me {
+    display: flex;
+    align-items: center;
+    margin: 10px 0;
+  }
 
-    .remember-me input {
-      margin-right: 5px;
-    }
+  .remember-me input {
+    margin-right: 5px;
+  }
 
-    .toggle-theme {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      cursor: pointer;
-    }
+  .toggle-theme {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    cursor: pointer;
+  }
 
-    .link {
-      display: block;
-      text-align: center;
-      margin-top: 15px;
-      color: #4CAF50;
-      text-decoration: none;
-    }
+  .link {
+    display: block;
+    text-align: center;
+    margin-top: 15px;
+    color: #4CAF50;
+    text-decoration: none;
+    transition: color 0.3s ease;
+  }
 
-    .link:hover {
-      text-decoration: underline;
-    }
+  .link:hover {
+    text-decoration: underline;
+  }
 
-    .google-signin-btn {
-      width: 100%;
-      padding: 12px;
-      background-color: #4285F4;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      margin-top: 15px;
-      cursor: pointer;
-    }
+  .dark-mode .link {
+    color: #57e4ff; /* Bright color for better contrast in dark mode */
+  }
 
-    .google-signin-btn:hover {
-      background-color: #357ae8;
-    }
-  </style>
+  .google-signin-btn {
+    width: 100%;
+    padding: 12px;
+    background-color: #4285F4;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    margin-top: 15px;
+    cursor: pointer;
+  }
+
+  .google-signin-btn:hover {
+    background-color: #357ae8;
+  }
+</style>
 </head>
 
 <body>
